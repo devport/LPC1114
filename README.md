@@ -14,7 +14,7 @@ https://svn.freepascal.org/svn/fpcbuild/binaries/i386-win32/
 FPC:
 1. Requires trunk version of FPC instal to 'c:\fpc'
 2. Get source FPC -> extract to 'c:\fpc_src'
-3. Copy lpc11xx.pp to fpc_src\rtl\embedded\arm
+3. Copy lpc11xx.pp to fpc_src\rtl\embedded\arm and replace (my version is for LPC1114XL (2xSPI etc))
 4. Go to fpc_src directory and Build using: 
 
 PATH=C:\fpc\3.0.4\bin\i386-win32;C:\cross
