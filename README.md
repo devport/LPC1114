@@ -21,8 +21,8 @@ PATH=C:\fpc\3.0.4\bin\i386-win32;C:\cross
 
 make clean buildbase installbase CROSSINSTALL=1 OS_TARGET=embedded CPU_TARGET=arm SUBARCH=armv6m
 
-C:\fpc\3.0.4\bin\i386-win32 << directory FPC
-C:\cross  << binary files fpcBuild (arm-embedded-as, arm-embedded-ld, etc.)
+* C:\fpc\3.0.4\bin\i386-win32 << directory FPC
+* C:\cross  << binary files fpcBuild (arm-embedded-as, arm-embedded-ld, etc.)
 
 5. Copy fpc_src\compiler\ppcrossarm.exe to fpc\3.0.4\bin\i386-win32
 6. Copy directory fpc_src\rtl\units\arm-embedded to fpc\3.0.4\units
