@@ -1,5 +1,5 @@
 # LPC1114
-LPC11114 in FreePascal
+LPC1114 in FreePascal
 
 Binutils:
 Download http://ftp.gnu.org/gnu/binutils/binutils-2.20.tar.bz2
