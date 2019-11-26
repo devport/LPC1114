@@ -8,12 +8,12 @@ Create a directory binutils-arm
 From binutils-arm run: ../binutils-2.20/configure --target=arm-elf --disable-nls --prefix=directory_where_you_want_binutils_installed
 Build using: make all install
 
-or download binary for windows:
+or download binary for windows and copy to 'c:\cross':
 https://svn.freepascal.org/svn/fpcbuild/binaries/i386-win32/
 
 FPC:
-1. Requires trunk version of FPC
-2. Get source FPC
+1. Requires trunk version of FPC instal to 'c:\fpc'
+2. Get source FPC -> extract to 'c:\fpc_src'
 3. Copy lpc11xx.pp to fpc_src\rtl\embedded\arm
 4. Go to fpc_src directory and Build using: 
 
