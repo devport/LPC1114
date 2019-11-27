@@ -113,7 +113,7 @@ type
     RESET_PIO0_0 : longword;
     PIO0_1       : longword;
     PIO1_8       : longword;
-    RESERVED1    : longword;
+    SSEL1_LOC    : longword;
     PIO0_2       : longword;
     PIO2_7       : longword;
     PIO2_8       : longword;
@@ -193,7 +193,8 @@ type
 
   { ------------- General Purpose Input/Output (GPIO) ------------- }
   TGPIO_Registers = record
-    MASKED_ACCESS: array [0 .. 4095] of longword;
+    MASKED_ACCESS: array [0 .. 4094] of longword;
+    DATA         : longword;
     RESERVED1    : array [0 .. 4095] of longword;
     DIR          : longword;
     IS           : longword;
@@ -244,9 +245,8 @@ type
     TER        : longword;
     RESERVED2  : array [0 .. 5] of longword;
     RS485CTRL  : longword;
-    ADRMATCH   : longword;
+    RS485ADRMATCH   : longword;
     RS485DLY   : longword;
-    FIFOLVL    : longword;
   end;
 
   { ------------- Synchronous Serial Communication (SSP) ------------- }
