@@ -1,4 +1,4 @@
-Program Project;
+Program Project1;
 
 uses
 	utils, delay, adc, spi, uart, system_LPC1114;
