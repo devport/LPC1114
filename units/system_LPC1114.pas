@@ -89,7 +89,8 @@ begin
 	for i:=0 to 200 do asm nop; end;
 	// ------------------------------------------------
 	LPC_SYSCON.SYSPLLCLKSEL := SYSPLLCLKSEL_OSC;
-	LPC_SYSCON.SYSPLLCLKUEN := $00;
+  LPC_SYSCON.SYSPLLCLKUEN := $01;
+  LPC_SYSCON.SYSPLLCLKUEN := $00;
 	LPC_SYSCON.SYSPLLCLKUEN := $01;
 	while ((LPC_SYSCON.SYSPLLCLKUEN and $01) = 0) do begin end;
 	
@@ -106,14 +107,13 @@ begin
 	end;
 	
 	LPC_SYSCON.SYSPLLCTRL := ((m-1) shl 0) or (p shl 5);
-	
-	//LPC_SYSCON.SYSPLLCTRL := SYSPLLCTRL_Val;
 	LPC_SYSCON.PDRUNCFG  := LPC_SYSCON.PDRUNCFG and not (1 shl 7);
 	while ((LPC_SYSCON.SYSPLLSTAT and $01) = 0) do begin end;
 	
 	
 	LPC_SYSCON.MAINCLKSEL := MAINCLKSEL_Val;
-	LPC_SYSCON.MAINCLKUEN := $00;
+  LPC_SYSCON.MAINCLKUEN := $01;
+  LPC_SYSCON.MAINCLKUEN := $00;
 	LPC_SYSCON.MAINCLKUEN := $01;
 	while ((LPC_SYSCON.MAINCLKUEN and $01) = 0) do begin end;
 	
