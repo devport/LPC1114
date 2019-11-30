@@ -1,7 +1,5 @@
 unit enc28j60;
 
-{$mode fpc}
-
 interface
 
 {$macro on}
