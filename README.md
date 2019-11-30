@@ -2,7 +2,7 @@
 LPC1114 in FreePascal
 
 UNITS FOR:
---- SysTick Timer, SH1106 OLED, OneWire, DS18B20, UART, SPI, ADC, Delay and utility ---
+--- ENC28J60, SH1106 OLED, OneWire, DS18B20, UART, SPI, ADC, SysTick Timer, Delay (Timers) and utility ---
 
 
 Binutils:
