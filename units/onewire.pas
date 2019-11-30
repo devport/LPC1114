@@ -1,3 +1,9 @@
+{
+
+ OneWire Driver
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit onewire;
 
 interface

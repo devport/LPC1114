@@ -1,3 +1,9 @@
+{
+
+ OneWire DS18B20 Temperature Sensor
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit ds18b20;
 
 interface

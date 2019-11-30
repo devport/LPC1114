@@ -1,3 +1,9 @@
+{
+
+ SH1106 OLED Display Driver
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit sh1106;
 
 interface

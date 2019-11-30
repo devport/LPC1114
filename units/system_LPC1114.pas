@@ -1,3 +1,9 @@
+{
+
+ System definitions and utility code for Init LPC1114
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit system_LPC1114;
 
 interface

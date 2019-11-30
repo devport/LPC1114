@@ -1,3 +1,9 @@
+{
+
+ Delay Timer
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit delay;
 
 interface

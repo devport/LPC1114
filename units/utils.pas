@@ -1,3 +1,9 @@
+{
+
+ Utility
+ Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
+
+}
 unit utils;
 
 interface
@@ -16,6 +22,7 @@ procedure SetInputs(Port : byte; pins : word);
 procedure SetOutputs(Port : byte; pins : word);
 procedure SetPins(Port : byte; pin : word);
 procedure ClrPins(Port : byte; pin : word);
+procedure TogglePin(Port : byte; Index : word);
 
 
 implementation
@@ -27,7 +34,7 @@ end;
 
 procedure SetBit(var Value: longword; Index: Byte);
 begin
-  Value :=  Value or (longword(1) shl Index);
+  Value := Value or (longword(1) shl Index);
 end;
 
 
@@ -35,7 +42,6 @@ function IntToStr (I : integer) : String;
 var
    S : string;
 begin
-  FillChar(result, length(result), #00);
 	Str (I, S);
   result := S;
 end;
@@ -89,6 +95,14 @@ begin
 	end;		
 end;
 
-
+procedure TogglePin(Port : byte; Index : word);
+begin
+	case Port of
+		0 : LPC_GPIO0.DATA := LPC_GPIO0.DATA xor ((longword(1) shl Index)xor High(longword));
+		1 : LPC_GPIO1.DATA := LPC_GPIO1.DATA xor ((longword(1) shl Index)xor High(longword));
+		2 : LPC_GPIO2.DATA := LPC_GPIO2.DATA xor ((longword(1) shl Index)xor High(longword));
+		3 : LPC_GPIO3.DATA := LPC_GPIO3.DATA xor ((longword(1) shl Index)xor High(longword));
+	end;
+end;
 
 end.
