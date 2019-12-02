@@ -10,22 +10,22 @@ interface
 
 const 
  // GPIO PINS
- GPIO_Pin_0                 = $0001;  { Pin 0 selected }
- GPIO_Pin_1                 = $0002;  { Pin 1 selected }
- GPIO_Pin_2                 = $0004;  { Pin 2 selected }
- GPIO_Pin_3                 = $0008;  { Pin 3 selected }
- GPIO_Pin_4                 = $0010;  { Pin 4 selected }
- GPIO_Pin_5                 = $0020;  { Pin 5 selected }
- GPIO_Pin_6                 = $0040;  { Pin 6 selected }
- GPIO_Pin_7                 = $0080;  { Pin 7 selected }
- GPIO_Pin_8                 = $0100;  { Pin 8 selected }
- GPIO_Pin_9                 = $0200;  { Pin 9 selected }
- GPIO_Pin_10                = $0400;  { Pin 10 selected }
- GPIO_Pin_11                = $0800;  { Pin 11 selected }
- GPIO_Pin_12                = $1000;  { Pin 12 selected }
- GPIO_Pin_13                = $2000;  { Pin 13 selected }
- GPIO_Pin_14                = $4000;  { Pin 14 selected }
- GPIO_Pin_15                = $8000;  { Pin 15 selected }
+ GPIO_Pin_0                 = (1 << 0);  { Pin 0 selected }
+ GPIO_Pin_1                 = (1 << 1);  { Pin 1 selected }
+ GPIO_Pin_2                 = (1 << 2);  { Pin 2 selected }
+ GPIO_Pin_3                 = (1 << 3);  { Pin 3 selected }
+ GPIO_Pin_4                 = (1 << 4);  { Pin 4 selected }
+ GPIO_Pin_5                 = (1 << 5);  { Pin 5 selected }
+ GPIO_Pin_6                 = (1 << 6);  { Pin 6 selected }
+ GPIO_Pin_7                 = (1 << 7);  { Pin 7 selected }
+ GPIO_Pin_8                 = (1 << 8);  { Pin 8 selected }
+ GPIO_Pin_9                 = (1 << 9);  { Pin 9 selected }
+ GPIO_Pin_10                = (1 << 10);  { Pin 10 selected }
+ GPIO_Pin_11                = (1 << 11);  { Pin 11 selected }
+ GPIO_Pin_12                = (1 << 12);  { Pin 12 selected }
+ GPIO_Pin_13                = (1 << 13);  { Pin 13 selected }
+ GPIO_Pin_14                = (1 << 14);  { Pin 14 selected }
+ GPIO_Pin_15                = (1 << 15);  { Pin 15 selected }
  GPIO_Pin_All               = $FFFF;  { All pins selected }
 
  CLOCK_SETUP           		= 1;
@@ -39,12 +39,12 @@ const
  SYSPLLCLKSEL_OSC      		= $0001;
  
  //SYSAHBCLKDIV bits
- SYS_SYSAHBCLKDIV_BIT			= 0;
- ROM_SYSAHBCLKDIV_BIT			= 1;
- RAM_SYSAHBCLKDIV_BIT			= 2;
+ SYS_SYSAHBCLKDIV_BIT			  = 0;
+ ROM_SYSAHBCLKDIV_BIT			  = 1;
+ RAM_SYSAHBCLKDIV_BIT			  = 2;
  FLASHREG_SYSAHBCLKDIV_BIT		= 3;
  FLASHARRAY_SYSAHBCLKDIV_BIT	= 4;
- I2C_SYSAHBCLKDIV_BIT			= 5;
+ I2C_SYSAHBCLKDIV_BIT			  = 5;
  GPIO_SYSAHBCLKDIV_BIT			= 6;
  CT16B0_SYSAHBCLKCTRL_BIT		= 7;
  CT16B1_SYSAHBCLKCTRL_BIT		= 8;
