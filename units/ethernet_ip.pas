@@ -31,7 +31,7 @@ type
 implementation
 
 uses
- utils, uart, ethernet_ip_icmp;
+ utils, uart, ethernet_ip_icmp, ethernet_ip_udp;
 
 var
   package_id : word = 0;
@@ -94,7 +94,7 @@ begin
                     end;
     IPV4_TYPE_UDP : begin
                        UART_Send(' IPV4 Type UDP'+#10#13);
-                       //len := ETH_Protocol_IP_UDP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
+                       len := ETH_Protocol_IP_UDP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
                     end;
   end;
 
