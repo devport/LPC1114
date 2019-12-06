@@ -57,7 +57,7 @@ begin
                          end;
     ETH_FRAME_TYPE_IPV4 : begin
                             UART_Send('Packet IP'+#10+#13);
-                            data_len := ETH_Protocol_IP(PByte(buffer+ETH_HEADER_SIZE), PBYTE(MACADDR), PBYTE(IP));
+                            data_len := ETH_Protocol_IP(buffer+ETH_HEADER_SIZE, PBYTE(MACADDR), PBYTE(IP));
                             if(data_len > 0) then begin
                               ETH_Swap_Mac(buffer);
                               data_len := data_len + ETH_HEADER_SIZE;
