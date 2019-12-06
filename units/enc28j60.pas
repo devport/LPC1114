@@ -297,7 +297,7 @@ end;
 
 procedure ENC28J60_ReadBuffer(len : word; data : PChar);
 begin
-        ENC28J60_CS_ON;
+  ENC28J60_CS_ON;
 	// issue write command
 	SPI_Write(0, ENC28J60_READ_BUF_MEM);
 	while(len > 0) do

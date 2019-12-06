@@ -56,7 +56,7 @@ end;
 
 procedure UART_Send(data : string);
 var
-	i : longword;
+	i : byte;
 begin
 	i := 1;
 	while i <= Length(data) do
