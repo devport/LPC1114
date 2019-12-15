@@ -241,13 +241,13 @@ EIR_RXERIF      = $01;
   MAX_FRAMELEN    = 1500;
 
 
-procedure ENC28J60_Init(macaddr : PChar);
+procedure ENC28J60_Init(macaddr : PByte);
 procedure ENC28J60_PhyWrite(address: byte; data : word);
-function enc28j60PacketReceive(maxlen : word; packet : PChar) : word;
-procedure enc28j60PacketSend(len : word; packet : PChar);
+function enc28j60PacketReceive(maxlen : word; packet : PByte) : word;
+procedure enc28j60PacketSend(len : word; packet : PByte);
 
 function ENC28J60_getrev() : byte;
-
+function enc28j60linkup() : word;
 
 implementation
 
@@ -295,7 +295,7 @@ begin
      ENC28J60_CS_OFF;
 end;
 
-procedure ENC28J60_ReadBuffer(len : word; data : PChar);
+procedure ENC28J60_ReadBuffer(len : word; data : PByte);
 begin
   ENC28J60_CS_ON;
 	// issue write command
@@ -304,14 +304,14 @@ begin
         begin
 		dec(len);
 		// read data
-		data^ := Char(SPI_Read(0));
+		data^ := SPI_Read(0);
 		inc(data);
 	end;
-	data^ := Char($00);
+	data^ := $00;
 	ENC28J60_CS_OFF;
 end;
 
-procedure ENC28J60_WriteBuffer(len : word; data : PChar);
+procedure ENC28J60_WriteBuffer(len : word; data : PByte);
 begin
 	ENC28J60_CS_ON;
   // issue write command
@@ -320,7 +320,7 @@ begin
 	begin
 		dec(len);
 		// write data
-		SPI_Write(0, byte(data^));
+		SPI_Write(0, data^);
 		inc(data);
 	end;
 	ENC28J60_CS_OFF;
@@ -403,7 +403,13 @@ begin
 		Result := rev;
 end;
 
-procedure ENC28J60_Init(macaddr : PChar);
+function enc28j60linkup() : word;
+begin
+  // bit 10 (= bit 3 in upper reg)
+  Result := ((ENC28J60_PhyRead(PHSTAT2) AND $0400) >> 10);
+end;
+
+procedure ENC28J60_Init(macaddr : PByte);
 begin
         // initialize I/O
         // ss as output:
@@ -472,12 +478,12 @@ begin
 	// do bank 3 stuff
         // write MAC address
         // NOTE: MAC address in ENC28J60 is byte-backward
-        ENC28J60_Write(MAADR5, byte(macaddr^));
-        ENC28J60_Write(MAADR4, byte((macaddr+1)^));
-        ENC28J60_Write(MAADR3, byte((macaddr+2)^));
-        ENC28J60_Write(MAADR2, byte((macaddr+3)^));
-        ENC28J60_Write(MAADR1, byte((macaddr+4)^));
-        ENC28J60_Write(MAADR0, byte((macaddr+5)^));
+        ENC28J60_Write(MAADR5, macaddr^);
+        ENC28J60_Write(MAADR4, (macaddr+1)^);
+        ENC28J60_Write(MAADR3, (macaddr+2)^);
+        ENC28J60_Write(MAADR2, (macaddr+3)^);
+        ENC28J60_Write(MAADR1, (macaddr+4)^);
+        ENC28J60_Write(MAADR0, (macaddr+5)^);
 	// no loopback of transmitted frames
 	ENC28J60_PhyWrite(PHCON2, PHCON2_HDLDIS);
 	// switch to bank 0
@@ -488,7 +494,7 @@ begin
 	ENC28J60_WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
 end;
 
-function enc28j60PacketReceive(maxlen : word; packet : PChar) : word;
+function enc28j60PacketReceive(maxlen : word; packet : PByte) : word;
 var
    len, rxstat : word;
 begin
@@ -546,7 +552,7 @@ begin
      Result := len;
 end;
 
-procedure enc28j60PacketSend(len : word; packet : PChar);
+procedure enc28j60PacketSend(len : word; packet : PByte);
 begin
         // Check no transmit in progress
   // Check no transmit in progress

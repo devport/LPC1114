@@ -107,7 +107,7 @@ begin
           //Set DSS data to 8-bit, Frame format SPI, CPOL = 0, CPHA = 0, and SCR is 15
           LPC_SSP1.CR0 := $0707;
           //SSPCPSR clock prescale register, master mode, minimum divisor is 0x02
-          LPC_SSP1.CPSR := 48;
+          LPC_SSP1.CPSR := $06;
           {$ifdef LOOPBACK_MODE}
              LPC_SSP1.CR1 := (1<<0) or (1<<1)
           {$else}
@@ -118,8 +118,9 @@ end;
 
 procedure SPI_Write(port : byte; data : byte);
 var
-   Dummy : longword;
+   Dummy : longword = 0;
 begin
+     Dummy := Dummy;
      if(port = 0) then
      begin
           while (LPC_SSP0.SR AND (SSPSR_TNF OR SSPSR_BSY)) <> SSPSR_TNF do;

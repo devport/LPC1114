@@ -11,11 +11,15 @@ interface
 type
   ArrayChar = array of char;
 
+var
+  time : longword = 1;
+
 procedure ClearBit(var Value: longword; Index: Byte);
 procedure SetBit(var Value: longword; Index: Byte);
 
 function IntToStr (I : integer) : String;
 function ArrayCharToString(A: ArrayChar): String;
+function GetTime():longword;
 
 // GPIO
 procedure SetInputs(Port : byte; pins : word);
@@ -26,6 +30,11 @@ procedure TogglePin(Port : byte; Index : word);
 
 
 implementation
+
+function GetTime() : longword;
+begin
+  Result := time;
+end;
 
 procedure ClearBit(var Value: longword; Index: Byte);
 begin
