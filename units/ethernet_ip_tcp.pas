@@ -48,6 +48,7 @@ type
 
 const
   TCB_LENGTH = 2;
+  TIMEOUT = 3*600;
 
   FLAG_NUL = $00;
   FLAG_FIN = $01;
@@ -184,9 +185,12 @@ begin
 
     tcb_array[i].tcb_flags := FLAG_NUL;
 
-    if(tcb_array[i].state = CLOSING) then
-    begin
+    if(tcb_array[i].state = CLOSING) then begin
       TCB_Destroy(@tcb_array[i]);
+    end;
+
+    if(tcb_array[i].state <> CLOSED) AND (tcb_array[i].time > TIMEOUT) then begin
+      tcb_array[i].state := CLOSING;
     end;
   end;
 end;
@@ -275,6 +279,7 @@ begin
 	          tcb^.src_mac[i] := ETH_Header^.src[i];
 
                 tcb^.tcb_flags := FLAG_SYN OR FLAG_ACK;
+                tcb^.time := 0;
               end;
 
               if(TCP_Header^.flags = FLAG_RST) then begin
@@ -290,8 +295,15 @@ begin
 		        tcb^.state := ESTABLISHED;
 		        tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + 1;
 		        tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
+                        tcb^.time := 0;
 		      end;
 		    end;
+
+                    if(TCP_Header^.flags = FLAG_RST) then begin
+                      UART_Send(' : TCB State: SYN_RECEIVED -> RST'#10#13);
+                      TCB_Destroy(tcb);
+		    end;
+
                    end;
 
       ESTABLISHED: begin
@@ -305,6 +317,9 @@ begin
 
                        if(socket^.recv_func <> nil) then
 		         socket^.recv_func(tcb^.id, tcb^.rcv_data, tcb^.rcv_datalen);
+                       tcb^.rcv_data := nil;
+                       tcb^.rcv_datalen := 0;
+                       tcb^.time := 0;
                      end;
                      // Pasive closed
 		     if((TCP_Header^.flags AND FLAG_FIN) = FLAG_FIN) then begin
@@ -333,6 +348,7 @@ begin
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
 		       tcb^.state := CLOSING;
                        tcb^.tcb_flags := FLAG_ACK;
+                       tcb^.time := 0;
                      end;
       end;
 

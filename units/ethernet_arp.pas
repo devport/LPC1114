@@ -31,7 +31,7 @@ procedure ETH_Protocol_ARP_Reply(snd_buf : PByte; dst_ip : longword; dst_mac : P
 implementation
 
 uses
- uart, utils, enc28j60, ethernet;
+ enc28j60, ethernet;
 
 procedure ETH_Protocol_ARP(arp_hdr : PByte; ip : PByte);
 var

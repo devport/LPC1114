@@ -31,9 +31,9 @@ const
   ETH_FRAME_TYPE_IPV4 = $0800;
   ETH_FRAME_TYPE_ARP  = $0806;
 
-  IPV4_TYPE_ICMP = 01;
-  IPV4_TYPE_TCP = 06;
-  IPV4_TYPE_UDP = 11;
+  IPV4_TYPE_ICMP = $01;
+  IPV4_TYPE_TCP = $06;
+  IPV4_TYPE_UDP = $11;
 
   ETH_HEADER_SIZE = 14;
   ETH_IP_HEADER_SIZE = 20;
@@ -57,6 +57,7 @@ var
   procedure SocketSetFunction(socket : PSocket; func : TRecv_function);
   procedure SocketSendData(id : byte; data : PByte; datalen : word);
   procedure SocketClose(id : byte);
+  procedure SocketIncreaseTime();
 
 implementation
 
@@ -246,6 +247,15 @@ procedure SocketClose(id : byte);
 begin
   tcb_array[id].tcb_flags := tcb_array[id].tcb_flags OR FLAG_FIN;
   tcb_array[id].state := FIN_WAIT_2;
+end;
+
+procedure SocketIncreaseTime();
+var
+  it : word;
+begin
+  for it:=0 to TCB_LENGTH do begin
+    Inc(tcb_array[it].time);
+  end;
 end;
 
 

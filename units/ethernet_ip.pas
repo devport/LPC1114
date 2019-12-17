@@ -27,7 +27,7 @@ var
 implementation
 
 uses
- ethernet, ethernet_ip_icmp, ethernet_ip_tcp;
+ uart, ethernet, ethernet_ip_icmp, ethernet_ip_tcp, ethernet_ip_udp;
 
 // works for big endian or little endian byte order
 function Calc_Checksum(buf : PWord; num_of_shorts, start : word) : word;
@@ -87,8 +87,8 @@ begin
                        ETH_Protocol_IP_TCP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
                     end;
     IPV4_TYPE_UDP : begin
-                       //UART_Send(' IPV4 Type UDP'+#10#13);
-                       //ETH_Protocol_IP_UDP(@ip_hdr[0], @ip_hdr[0]+ETH_IP_HEADER_SIZE, ip_data_len);
+                       UART_Send(' IPV4 Type UDP'+#10#13);
+                       ETH_Protocol_IP_UDP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
                     end;
   end;
 end;

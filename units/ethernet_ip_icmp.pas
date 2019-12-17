@@ -35,9 +35,9 @@ var
   checksum, checksum_size : word;
 begin
   Result := 0;
-  ICMP_Header := @icmp_hdr[0];
-  IP_Header := @ip_hdr[0];
-  ETH_Header := (@ip_hdr[0])-ETH_HEADER_SIZE;
+  ICMP_Header := PICMP_HDR(icmp_hdr);
+  IP_Header := PIP_HDR(ip_hdr);
+  ETH_Header := PETH_HDR(ip_hdr)-ETH_HEADER_SIZE;
 
   checksum_size := size;
   if (checksum_size AND $01) = $01 then begin
@@ -49,8 +49,8 @@ begin
   if (checksum <> $FFFF) then exit;
 
 
-  if ((ICMP_Header^).hdr_type = ICMP_TYPE_REQUEST) then begin
-    ETH_Protocol_IP_ICMP_Reply((IP_Header^).src, @(ETH_Header^).src[0], (ICMP_Header^).identifier, (ICMP_Header^).sequence, (ICMP_Header^).data_time, @(ICMP_Header^).data[0] );
+  if (ICMP_Header^.hdr_type = ICMP_TYPE_REQUEST) then begin
+   // ETH_Protocol_IP_ICMP_Reply(IP_Header^.src, @ETH_Header^.src[0], (ICMP_Header^).identifier, (ICMP_Header^).sequence, (ICMP_Header^).data_time, @(ICMP_Header^).data[0] );
   end;
 end;
 
