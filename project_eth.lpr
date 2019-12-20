@@ -3,13 +3,14 @@ program project_eth;
 uses
     cortexm0, system_LPC1114, utils, delay, spi, uart, enc28j60, ethernet, ethernet_ip_tcp;
 
-const
-  OSC = 12000000;
-  FREQ = 48000000;
-
 var
    data_buf : array[0..BUFFER_SIZE] of Byte;
-   Server80 : TSocket;
+   Server80, Server1234 : TSocket;
+
+procedure SysTick_interrupt; public Name 'SysTick_interrupt'; interrupt;
+begin
+  SocketIncreaseTime();
+end;
 
 procedure server_recv80(tcb_id : byte; rcv_data : PByte; rcv_data_size : word);
 var
@@ -26,7 +27,7 @@ end;
 
 begin
   // Inicjalize System Clock
-  SystemInit(OSC, FREQ);
+  SystemInit();
   LPC_SYSCON.SYSAHBCLKCTRL := LPC_SYSCON.SYSAHBCLKCTRL or ((1 shl GPIO_SYSAHBCLKDIV_BIT) or (1 shl IOCON_SYSAHBCLKCTRL_BIT));
 
   // Delay Init
@@ -50,6 +51,13 @@ begin
   // LedA - ON | LedB - Tx/Rx | 73ms  =  0xD76
   ENC28J60_PhyWrite(PHLCON, $D76); //0x746
   InitTCB();
+
+  // SysTick Config    100ms
+  SysTick_Config(48000000 div 10);
+
+ // Socket_Create(@Server1234, IPV4_TYPE_UDP);
+ // Socket_Bind(@Server1234, 1234);
+ // Socket_Listen(@Server1234);
 
   Socket_Create(@Server80, IPV4_TYPE_TCP);
   Socket_Bind(@Server80, 80);
