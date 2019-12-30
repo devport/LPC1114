@@ -105,7 +105,7 @@ begin
 
     ucb^.src_ip := ByteSwap32(IP_Header^.src);
 
-    UART_Send('Data from UDP: '+PChar(udp_data));
+  //  UART_Send('Data from UDP: '+PChar(udp_data));
 
   end;
 

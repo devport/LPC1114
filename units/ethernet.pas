@@ -4,7 +4,7 @@ interface
 
 type
   TSOCKET_STATE = (NOT_A_SOCKET = 0, SOCKET_CLOSED = 1, SOCKET_IN_PROGRESS, SOCKET_CONNECTED, SOCKET_CLOSING);
-  //TFSM_STATES = (CLOSED = 0, LISTEN = 1, SYN_SENT, SYN_RECEIVED, ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING, LAST_ACK, TIME_WAIT);
+  TFSM_STATES = (CLOSED = 0, LISTEN = 1, SYN_SENT, SYN_RECEIVED, ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING, LAST_ACK, TIME_WAIT);
 
   PRecv_function = ^TRecv_function;
   TRecv_function = procedure(tcb_id : byte; rcv_data : PByte; rcv_data_size : word);
@@ -20,7 +20,7 @@ type
   TSocket = record
   	sck_type : byte;
 	sck_port : word;
-        fsm_state : byte;
+        fsm_state : TFSM_STATES;
         sck_State : TSOCKET_STATE;
         recv_func : TRecv_function;
 	nextSocket : PSocket;
@@ -40,7 +40,7 @@ const
   BUFFER_SIZE = 1460;
 
 var
-  MACADDR : array of byte = ($CC,$46,$D6,$10,$00,$29);
+  MACADDR : array of byte = ($CC,$46,$D6,$10,$00,$39);
   IP : array of byte = (192, 168, 1, 220);
 
   procedure ETH_Process_Frame(buffer : PBYTE);

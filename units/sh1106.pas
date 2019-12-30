@@ -8,8 +8,6 @@ unit sh1106;
 
 interface
 
-uses
-  utils, spi;
 {$macro on}
 {$define WIDTH   := 128}
 {$define HEIGHT  := 64}
@@ -331,7 +329,7 @@ procedure SH1106_Display(buffer : PByte);
 implementation
 
 uses
-  delay, system_LPC1114;
+  system_LPC1114, delay, utils, spi;
 
 procedure SH1106_Write(data : byte; data_type : byte);
 begin

@@ -11,7 +11,8 @@ uses system_LPC1114;
 
 procedure UART_Init();
 procedure UART_Send_Byte(data : byte);
-procedure UART_Send(data : string);
+procedure UART_Send(var data : String);
+procedure UART_Send(data : PChar; data_size : word);
 function UART_Recv_Byte() : byte;
 
 implementation
@@ -54,12 +55,24 @@ begin
 	LPC_UART.RBR_THR_DLL := data;
 end;
 
-procedure UART_Send(data : string);
+procedure UART_Send(data : PChar; data_size : word);
 var
 	i : byte;
 begin
 	i := 1;
-	while i <= Length(data) do
+	while i <= data_size do
+	begin
+		UART_Send_Byte(byte(data[i]));
+		inc(i);
+	end;
+end;
+
+procedure UART_Send(var data : String);
+var
+	i : byte;
+begin
+	i := 1;
+	while i <= length(data) do
 	begin
 		UART_Send_Byte(byte(data[i]));
 		inc(i);

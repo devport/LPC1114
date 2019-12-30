@@ -8,8 +8,6 @@ unit delay;
 
 interface
 
-uses system_LPC1114;
-
 const
 	PRESCALE_US = 48;
 	PRESCALE_MS = 48000;
@@ -31,7 +29,7 @@ procedure Delay_US(time : longword);
 
 implementation
 
-uses utils;
+uses system_LPC1114, utils;
 
 procedure Delay_Init();
 begin

@@ -71,7 +71,7 @@ begin
           //Set DSS data to 8-bit, Frame format SPI, CPOL = 0, CPHA = 0, and SCR is 15
           LPC_SSP0.CR0 := $0707;
           //SSPCPSR clock prescale register, master mode, minimum divisor is 0x02
-          LPC_SSP0.CPSR := $06;
+          LPC_SSP0.CPSR := $10;
           {$ifdef LOOPBACK_MODE}
              LPC_SSP0.CR1 := (1<<0) or (1<<1)
           {$else}

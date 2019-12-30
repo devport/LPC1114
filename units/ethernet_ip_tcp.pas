@@ -32,7 +32,7 @@ type
 	rcv_wnd : longword;
 	iss : longword;
 	irs : longword;
-	state : byte;
+	state : TFSM_STATES;
 	time : longword;
 	id : byte;
 	src_mac : array[0..5] of byte;
@@ -47,7 +47,7 @@ type
   end;
 
 const
-  TCB_LENGTH = 2;
+  TCB_LENGTH = 10;
   TIMEOUT = 3*600;
 
   FLAG_NUL = $00;
@@ -58,32 +58,32 @@ const
   FLAG_ACK = $10;
   FLAG_URG = $20;
 
-  CLOSED = 0;
-  LISTEN = 1;
-  SYN_SENT = 2;
-  SYN_RECEIVED = 3;
-  ESTABLISHED = 4;
-  FIN_WAIT_1 = 5;
-  FIN_WAIT_2 = 6;
-  CLOSE_WAIT = 7;
-  CLOSING = 8;
-  LAST_ACK = 9;
-  TIME_WAIT = 10;
-
 
 
 var
   tcb_array : array[0..TCB_LENGTH] of TTCB;
 
-procedure ETH_Protocol_IP_TCP(ip_hdr, tcp_hdr : PByte; ip_data_len : word);
-procedure ETH_Protocol_IP_TCP_Send(snd_buf : PByte; tcb : PTCB);
-procedure TCB_Process(buffer : PByte);
-procedure InitTCB();
+  function Socket_TCPClientNum() : longword;
+  procedure ETH_Protocol_IP_TCP(ip_hdr, tcp_hdr : PByte; ip_data_len : word);
+  procedure ETH_Protocol_IP_TCP_Send(snd_buf : PByte; tcb : PTCB);
+  procedure TCB_Process(buffer : PByte);
+  procedure InitTCB();
 
 implementation
 
 uses
-  uart, utils, ethernet_ip, enc28j60;
+  ethernet_ip, enc28j60;
+
+function Socket_TCPClientNum() : longword;
+var
+  i, j : longword;
+begin
+  j := 1;
+  for i:=0 to TCB_LENGTH do begin
+    if(tcb_array[i].src_ip <> 0 ) then inc(j);
+  end;
+  Result := j-1;
+end;
 
 procedure InitTCB();
 var
@@ -230,6 +230,8 @@ var
   checksum, checksum_size : word;
   socket : PSocket = nil;
   i : byte;
+  //
+  //infostr : string;
 begin
   socket := nil;
   tcb := nil;
@@ -257,14 +259,15 @@ begin
       tcb := TCB_GetTCB(socket);
     if(tcb = nil) then exit;
 
-   UART_Send('TCB State: '+IntToStr(tcb^.state)+#10#13);
-   UART_Send('Flags : '+IntToStr(TCP_Header^.flags)+#10#13);
-   UART_Send('TCB ID: '+IntToStr(tcb^.id)+#10#13);
+   //UART_Send('TCB State: '+IntToStr(tcb^.state)+#10#13);
+   //UART_Send('Flags : '+IntToStr(TCP_Header^.flags)+#10#13);
+   //UART_Send('TCB ID: '+IntToStr(tcb^.id)+#10#13);
 
     case (tcb^.state) of
       LISTEN: begin
               if (TCP_Header^.flags = FLAG_SYN) then begin
-                UART_Send(' : TCB State: LISTEN -> SYN'#10#13);
+                //infostr := ' : TCB State: LISTEN -> SYN'#10#13;
+                //UART_Send(infostr);
 	        tcb^.src_ip := ByteSwap32(IP_Header^.src);
 	        tcb^.src_port := ByteSwap16(TCP_Header^.src_port);
 	        tcb^.irs := ByteSwap32(TCP_Header^.seq);
@@ -290,7 +293,8 @@ begin
 
       SYN_RECEIVED: begin
                     if(TCP_Header^.flags = FLAG_ACK) then begin
-                      UART_Send(' : TCB State: SYN_RECEIVED -> ACK'#10#13);
+                      //infostr := ' : TCB State: SYN_RECEIVED -> ACK'#10#13;
+                      //UART_Send(infostr);
 		      if(tcb^.snd_nxt = ByteSwap32(TCP_Header^.ack)) then begin
 		        tcb^.state := ESTABLISHED;
 		        tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + 1;
@@ -300,7 +304,8 @@ begin
 		    end;
 
                     if(TCP_Header^.flags = FLAG_RST) then begin
-                      UART_Send(' : TCB State: SYN_RECEIVED -> RST'#10#13);
+                      //infostr := ' : TCB State: SYN_RECEIVED -> RST'#10#13;
+                      //UART_Send(infostr);
                       TCB_Destroy(tcb);
 		    end;
 
@@ -308,22 +313,24 @@ begin
 
       ESTABLISHED: begin
                      if(TCP_Header^.flags = (FLAG_PSH OR FLAG_ACK)  )then begin
-                       UART_Send(' : TCB State: ESTABLISHED -> PSH'#10#13);
-                       tcb^.rcv_data := tcp_hdr + (TCP_Header^.hdr_len>>2);
+                       //infostr := ' : TCB State: ESTABLISHED -> PSH'#10#13;
+                       //UART_Send(infostr);
+                       tcb^.rcv_data := tcp_hdr + (TCP_Header^.hdr_len>>2)-1;
                        tcb^.rcv_datalen := ByteSwap16(IP_Header^.total_len) - word((IP_Header^.ver_len AND $0F) << 2) - word(TCP_Header^.hdr_len>>2);
                        tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + tcb^.rcv_datalen; // + datalen
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
                        tcb^.tcb_flags :=  FLAG_ACK;
-
+                       tcb^.time := 0;
                        if(socket^.recv_func <> nil) then
 		         socket^.recv_func(tcb^.id, tcb^.rcv_data, tcb^.rcv_datalen);
-                       tcb^.rcv_data := nil;
-                       tcb^.rcv_datalen := 0;
-                       tcb^.time := 0;
+                       //tcb^.rcv_data := nil;
+                       //tcb^.rcv_datalen := 0;
+
                      end;
                      // Pasive closed
 		     if((TCP_Header^.flags AND FLAG_FIN) = FLAG_FIN) then begin
-                       UART_Send(' : TCB State: ESTABLISHED -> FIN'#10#13);
+                       //infostr := ' : TCB State: ESTABLISHED -> FIN'#10#13;
+                       //UART_Send(infostr);
 		       tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + 1;
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
 		       tcb^.tcb_flags := (FLAG_FIN OR FLAG_ACK);
@@ -343,7 +350,8 @@ begin
 
       FIN_WAIT_2 : begin
                      if(TCP_Header^.flags = (FLAG_FIN OR FLAG_ACK)) then begin
-                       UART_Send(' : TCB State: FIN_WAIT_2 -> FIN & ACK'#10#13);
+                       //infostr := ' : TCB State: FIN_WAIT_2 -> FIN & ACK'#10#13;
+                       //UART_Send(infostr);
                        tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + 1;
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
 		       tcb^.state := CLOSING;
@@ -354,7 +362,8 @@ begin
 
       LAST_ACK: begin
                 if(TCP_Header^.flags AND FLAG_ACK) = FLAG_ACK then begin
-		    UART_Send(' : TCB State: LAST_ACK -> ACK'+#10#13);
+                    //infostr := ' : TCB State: LAST_ACK -> ACK'+#10#13;
+                    //UART_Send(infostr);
 		    tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + 1;
 		    tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
 		    tcb^.state := CLOSING;
@@ -363,7 +372,8 @@ begin
                 end;
 
     else
-      UART_Send(#10'Warning: State unknown! ');
+      //infostr := #10'Warning: State unknown! ';
+      //UART_Send(infostr);
       TCB_Destroy(tcb);
     end;
   end;

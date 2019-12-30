@@ -37,7 +37,7 @@ function OW_Search( var state : TSearchState) : boolean;
 implementation
 
 uses
- delay, heapmgr;
+ delay;
 
 const
   bConflict = $00;
