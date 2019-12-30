@@ -52,6 +52,7 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
       <TargetProcessor Value="ARMV6M"/>
       <TargetCPU Value="arm"/>
       <TargetOS Value="embedded"/>
@@ -63,10 +64,12 @@
       <Debugging>
         <GenerateDebugInfo Value="False"/>
       </Debugging>
+      <LinkSmart Value="True"/>
     </Linking>
     <Other>
       <WriteFPCLogo Value="False"/>
-      <CustomOptions Value="-WpLPC1114FBD48_302"/>
+      <CustomOptions Value="-WpLPC1114FBD48_302
+-dLPC1114"/>
       <CompilerPath Value="ppcrossarm"/>
     </Other>
   </CompilerOptions>
