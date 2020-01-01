@@ -1,81 +1,38 @@
 {
-
- Utility
- Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
-
+  Unit name: Utils for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
 }
-unit utils;
+unit Utils;
 
 interface
 
 type
   ArrayChar = array of char;
 
-var
-  time : longword = 1;
-
-function Int_To_Str(buf : PChar; x : longint):word;
-
 function IsDigital(c : char): boolean;
+function GetTime():longword;
+
 procedure ClearBit(var Value: longword; Index: Byte);
 procedure SetBit(var Value: longword; Index: Byte);
 
 function IntToStr (I : integer) : String;
-function GetTime():longword;
 
 // GPIO
 procedure SetInputs(Port : byte; pins : word);
 procedure SetOutputs(Port : byte; pins : word);
 procedure SetPins(Port : byte; pin : word);
 procedure ClrPins(Port : byte; pin : word);
-procedure TogglePin(Port : byte; Index : word);
+function PinSense(Port : byte; pin : word) : boolean;
+//procedure TogglePin(Port : byte; Index : word);
 
+var
+  time : longword = 1;
 
 implementation
 
 uses
   system_LPC1114;
-
-function Int_To_Str(buf : PChar; x : longint):word;
-var
-  buff : array[0..5] of char;
-  p : PChar;
-  size : longint;
-  value : Smallint;
-begin
-  Int_To_Str := 0;
-  p := @buff;
-  value := x;
-  inc(buf);
-  size := longint(buf);
-
-  if(value < 0) then begin
-    buf^ := '-';
-    Inc(buf);
-    value := -value;
-  end;
-
-  if(value = 0) then begin
-    buf^ := '0';
-    Inc(buf);
-    exit;
-  end;
-
-  while(value > 0) do begin
-    p^ := char(value mod 10 + Ord('0'));
-    value := value div 10;
-    inc(p);
-  end;
-
-  while p <> @buff do begin
-    dec(p);
-    buf^ := p^;
-    inc(buf);
-  end;
-
-  size := longint(buf)- size;
-  Int_To_Str := word(size);
-end;
 
 function IsDigital(c : char): boolean;
 begin
@@ -88,12 +45,12 @@ begin
   GetTime := time;
 end;
 
-procedure ClearBit(var Value: longword; Index: Byte);
+procedure ClearBit(var Value: longword; Index: Byte); inline;
 begin
   Value := Value and ((longword(1) shl Index) xor High(longword));
 end;
 
-procedure SetBit(var Value: longword; Index: Byte);
+procedure SetBit(var Value: longword; Index: Byte); inline;
 begin
   Value := Value or (longword(1) shl Index);
 end;
@@ -110,10 +67,15 @@ end;
 procedure SetInputs(Port : byte; pins : word);
 begin
 	case Port of
-		0 : LPC_GPIO0.DIR := LPC_GPIO0.DIR and pins;
-		1 : LPC_GPIO1.DIR := LPC_GPIO1.DIR and pins;
-		2 : LPC_GPIO2.DIR := LPC_GPIO2.DIR and pins;
-		3 : LPC_GPIO3.DIR := LPC_GPIO3.DIR and pins;
+		0 : begin
+                      case pins of
+                        GPIO_Pin_11 : LPC_IOCON.R_PIO0_11 := LPC_IOCON.R_PIO0_11 OR (1 << 0);
+                      end;
+                      LPC_GPIO0.DIR := LPC_GPIO0.DIR and not pins;
+                    end;
+                1 : LPC_GPIO1.DIR := LPC_GPIO1.DIR and not pins;
+		2 : LPC_GPIO2.DIR := LPC_GPIO2.DIR and not pins;
+		3 : LPC_GPIO3.DIR := LPC_GPIO3.DIR and not pins;
 	end;		
 end;
 
@@ -164,6 +126,17 @@ begin
 	end;		
 end;
 
+function PinSense(Port : byte; pin : word) : boolean;
+begin
+     Result := False;
+	case Port of
+		0 : Result := (LPC_GPIO0.MASKED_ACCESS[pin] AND PIN) = PIN;
+		1 : Result := (LPC_GPIO1.MASKED_ACCESS[pin] AND PIN) = PIN;
+		2 : Result := (LPC_GPIO2.MASKED_ACCESS[pin] AND PIN) = PIN;
+		3 : Result := (LPC_GPIO3.MASKED_ACCESS[pin] AND PIN) = PIN;
+	end;
+end;
+{
 procedure TogglePin(Port : byte; Index : word);
 begin
 	case Port of
@@ -173,5 +146,5 @@ begin
 		3 : LPC_GPIO3.DATA := LPC_GPIO3.DATA xor ((longword(1) shl Index)xor High(longword));
 	end;
 end;
-
+}
 end.

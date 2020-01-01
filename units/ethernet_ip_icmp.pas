@@ -1,3 +1,8 @@
+{
+  Unit name: Ethernet ICMP/IP for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
+}
 unit ethernet_ip_icmp;
 
 interface

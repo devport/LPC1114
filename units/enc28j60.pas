@@ -1,3 +1,8 @@
+{
+  Unit name: ENC28j60 driver for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
+}
 unit enc28j60;
 
 interface

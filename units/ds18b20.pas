@@ -1,8 +1,7 @@
 {
-
- OneWire DS18B20 Temperature Sensor
- Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
-
+  Unit name: DS18B20 driver for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
 }
 unit ds18b20;
 

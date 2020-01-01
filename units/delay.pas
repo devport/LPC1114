@@ -1,8 +1,7 @@
 {
-
- Delay Timer
- Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
-
+  Unit name: Delay for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
 }
 unit delay;
 

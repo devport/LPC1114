@@ -1,8 +1,7 @@
 {
-
- SH1106 OLED Display Driver
- Created by Darek Kwiecinski 2019 - kwiecinskidarek@gmail.com
-
+  Unit name: SH1106 OLED Driver for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
 }
 unit sh1106;
 

@@ -21,30 +21,6 @@ const
  TPIU_BASE  = $E0040000;
  ETM_BASE   = $E0041000;
 
- { SysTick Control / Status Register Definitions }
- SysTick_CTRL_CLKSOURCE_Pos = $02;
- SysTick_CTRL_CLKSOURCE_Msk = $04;
- SysTick_CTRL_TICKINT_Pos   = $01;
- SysTick_CTRL_TICKINT_Msk   = $02;
- SysTick_CTRL_ENABLE_Pos    = $00;
- SysTick_CTRL_ENABLE_Msk    = $01;
- SysTick_CTRL_COUNTFLAG_Pos = $10;
- SysTick_CTRL_COUNTFLAG_Msk = $10000;
- { SysTick Reload Register Definitions }
- SysTick_LOAD_RELOAD_Pos    = $00;
- SysTick_LOAD_RELOAD_Msk    = $1000000;
- { SysTick Current Register Definitions }
- SysTick_VAL_CURRENT_Pos    = $00;
- SysTick_VAL_CURRENT_Msk    = $1000000;
- { SysTick Calibration Register Definitions }
- SysTick_CALIB_NOREF_Pos    = $1f;
- SysTick_CALIB_NOREF_Msk    = $80000000;
- SysTick_CALIB_SKEW_Pos     = $1e;
- SysTick_CALIB_SKEW_Msk     = $40000000;
- SysTick_CALIB_TENMS_Pos    = $00;
- SysTick_CALIB_TENMS_Msk    = $ffffff;
-
-
 type
 
  TNVICRegisters = record
@@ -97,31 +73,8 @@ var
  // Core Debug
  CoreDebug: TCoreDebugRegisters     absolute (SCS_BASE+$0DF0);
 
-
-
-
- function SysTick_Config(ticks : longword) : longword;
-
 implementation
 
-// System Tick Configuration
-//
-//  param - Number of ticks between two interrupts.
-//  return - 0  Function succeeded.
-//  return - 1  Function failed.
 
-function SysTick_Config(ticks : longword) : longword;
-begin
- // Reload value impossible
- if ((ticks - 1) > SysTick_LOAD_RELOAD_Msk) then
-    Result := 1;
-
- SysTick.Load :=  ticks - 1;
- SysTick.Val := 0;
- Systick.Ctrl := SysTick_CTRL_CLKSOURCE_Msk or
-                 SysTick_CTRL_TICKINT_Msk or
-                 SysTick_CTRL_ENABLE_Msk;
- Result := 0;
-end;
 
 end.

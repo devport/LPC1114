@@ -1,3 +1,8 @@
+{
+  Unit name: Ethernet for LPC1114
+  Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
+  Date: 01.01.2020r;
+}
 unit ethernet;
 
 interface
@@ -41,7 +46,7 @@ const
 
 var
   MACADDR : array of byte = ($CC,$46,$D6,$10,$00,$39);
-  IP : array of byte = (192, 168, 1, 220);
+  IP : array of byte = (192, 168, 1, 200);
 
   procedure ETH_Process_Frame(buffer : PBYTE);
   function ByteSwap16(a : word) : word;
