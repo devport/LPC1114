@@ -56,7 +56,7 @@
       <TargetCPU Value="arm"/>
       <TargetOS Value="embedded"/>
       <Optimizations>
-        <OptimizationLevel Value="2"/>
+        <OptimizationLevel Value="0"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
@@ -68,6 +68,7 @@
     <Other>
       <WriteFPCLogo Value="False"/>
       <CustomOptions Value="-WpLPC1114FBD48_302
+-al
 -dLPC1114"/>
       <CompilerPath Value="ppcrossarm"/>
     </Other>
