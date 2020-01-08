@@ -11,8 +11,7 @@ type
   TSOCKET_STATE = (NOT_A_SOCKET = 0, SOCKET_CLOSED = 1, SOCKET_IN_PROGRESS, SOCKET_CONNECTED, SOCKET_CLOSING);
   TFSM_STATES = (CLOSED = 0, LISTEN = 1, SYN_SENT, SYN_RECEIVED, ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING, LAST_ACK, TIME_WAIT);
 
-  PRecv_function = ^TRecv_function;
-  TRecv_function = procedure(tcb_id : byte; rcv_data : PByte; rcv_data_size : word);
+  TRecv_function = procedure(tcb_id : byte; rcv_data : PByte; rcv_size : word);
 
   PEth_HDR = ^TEth_Hdr;
   TEth_HDR = packed record
@@ -46,7 +45,7 @@ const
 
 var
   MACADDR : array of byte = ($CC,$46,$D6,$10,$00,$39);
-  IP : array of byte = (192, 168, 1, 200);
+  IP : array of byte = (192, 168, 1, 220);
 
   procedure ETH_Process_Frame(buffer : PBYTE);
   function ByteSwap16(a : word) : word;
@@ -63,6 +62,7 @@ var
   procedure SocketSendData(id : byte; data : PByte; datalen : word);
   procedure SocketClose(id : byte);
   procedure SocketIncreaseTime();
+  function SocketSegmentation(id : byte) : byte;
 
 implementation
 
@@ -263,6 +263,10 @@ begin
   end;
 end;
 
+function SocketSegmentation(id : byte) : byte;
+begin
+  Result := tcb_array[id].seg;
+end;
 
 
 end.

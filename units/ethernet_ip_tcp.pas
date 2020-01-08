@@ -1,7 +1,7 @@
 {
   Unit name: Ethernet TCP/IP for LPC1114
   Author: Dariusz Kwiecinski ( kwiecinskidarek@gmail.com )
-  Date: 01.01.2020r;
+  Date: 08.01.2020r;
 }
 unit ethernet_ip_tcp;
 
@@ -43,6 +43,7 @@ type
 	src_mac : array[0..5] of byte;
 	tcb_flags : byte;
         tcb_use : byte;
+        seg : byte;
 
 	snd_data : PByte;
 	snd_datalen : word;
@@ -52,7 +53,7 @@ type
   end;
 
 const
-  TCB_LENGTH = 10;
+  TCB_LENGTH = 3;
   TIMEOUT = 3*600;
 
   FLAG_NUL = $00;
@@ -101,6 +102,7 @@ begin
    tcb_array[i].dst_ip := 0;
    tcb_array[i].dst_port := 0;
    tcb_array[i].id := i;
+   tcb_array[i].seg := 0;
    tcb_array[i].rcv_nxt := 0;
    tcb_array[i].snd_nxt := 0;
    tcb_array[i].tcb_flags := FLAG_NUL;
@@ -126,6 +128,7 @@ begin
       tcb_array[i].src_ip := 0;
       tcb_array[i].rcv_nxt := 0;
       tcb_array[i].snd_nxt := 0;
+      tcb_array[i].seg := 0;
       tcb_array[i].tcb_flags := FLAG_NUL;
       tcb_array[i].snd_data := nil;
       tcb_array[i].snd_datalen := 0;
@@ -163,6 +166,7 @@ begin
   tcb^.dst_ip := 0;
   tcb^.dst_port := 0;
   tcb^.rcv_nxt := 0;
+  tcb^.seg := 0;
   tcb^.snd_nxt := 0;
   tcb^.rcv_datalen := 0;
   tcb^.rcv_data := nil;
@@ -234,6 +238,7 @@ var
   tcb : PTCB;
   checksum, checksum_size : word;
   socket : PSocket = nil;
+  data_size : word;
   i : byte;
   //
   //infostr : string;
@@ -320,18 +325,37 @@ begin
                      if(TCP_Header^.flags = (FLAG_PSH OR FLAG_ACK)  )then begin
                        //infostr := ' : TCB State: ESTABLISHED -> PSH'#10#13;
                        //UART_Send(infostr);
-                       tcb^.rcv_data := tcp_hdr + (TCP_Header^.hdr_len>>2)-1;
+                       tcb^.rcv_data := tcp_hdr + (TCP_Header^.hdr_len>>2) - 1;
                        tcb^.rcv_datalen := ByteSwap16(IP_Header^.total_len) - word((IP_Header^.ver_len AND $0F) << 2) - word(TCP_Header^.hdr_len>>2);
                        tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + tcb^.rcv_datalen; // + datalen
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
                        tcb^.tcb_flags :=  FLAG_ACK;
                        tcb^.time := 0;
+
+                       {if tcb^.rcv_datalen > 0 then begin
+                         move(tcb^.rcv_data[1], tcb^.rcv_tmp[tcb^.rcv_datalen], data_size);
+                         tcb^.rcv_datalen := tcb^.rcv_datalen + data_size;
+                         tcb^.rcv_data := tcb^.rcv_tmp;
+                       end;
+                        }
                        if(socket^.recv_func <> nil) then
 		         socket^.recv_func(tcb^.id, tcb^.rcv_data, tcb^.rcv_datalen);
-                       //tcb^.rcv_data := nil;
-                       //tcb^.rcv_datalen := 0;
-
+                       tcb^.rcv_data := nil;
+                       tcb^.rcv_datalen := 0;
                      end;
+
+                     if(TCP_Header^.flags = FLAG_ACK) then begin
+                       tcb^.rcv_data := tcp_hdr + (TCP_Header^.hdr_len>>2) - 1;
+                       tcb^.rcv_datalen := ByteSwap16(IP_Header^.total_len) - word((IP_Header^.ver_len AND $0F) << 2) - word(TCP_Header^.hdr_len>>2);
+                       tcb^.rcv_nxt := ByteSwap32(TCP_Header^.seq) + tcb^.rcv_datalen; // + datalen
+		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
+                       tcb^.tcb_flags :=  FLAG_ACK;
+                       tcb^.time := 0;
+
+                       //if tcb^.rcv_datalen > 0 then
+                        // move(tcb^.rcv_data[1], tcb^.rcv_tmp, tcb^.rcv_datalen);
+                     end;
+
                      // Pasive closed
 		     if((TCP_Header^.flags AND FLAG_FIN) = FLAG_FIN) then begin
                        //infostr := ' : TCB State: ESTABLISHED -> FIN'#10#13;

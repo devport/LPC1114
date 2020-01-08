@@ -61,7 +61,7 @@ var
    S : string;
 begin
   Str (I, S);
-  IntToStr := S;
+  Result := S;
 end;
 
 procedure SetInputs(Port : byte; pins : word);
@@ -130,10 +130,10 @@ function PinSense(Port : byte; pin : word) : boolean;
 begin
      Result := False;
 	case Port of
-		0 : Result := (LPC_GPIO0.MASKED_ACCESS[pin] AND PIN) = PIN;
-		1 : Result := (LPC_GPIO1.MASKED_ACCESS[pin] AND PIN) = PIN;
-		2 : Result := (LPC_GPIO2.MASKED_ACCESS[pin] AND PIN) = PIN;
-		3 : Result := (LPC_GPIO3.MASKED_ACCESS[pin] AND PIN) = PIN;
+		0 : Result := (LPC_GPIO0.MASKED_ACCESS[pin] AND pin) = pin;
+		1 : Result := (LPC_GPIO1.MASKED_ACCESS[pin] AND pin) = pin;
+		2 : Result := (LPC_GPIO2.MASKED_ACCESS[pin] AND pin) = pin;
+		3 : Result := (LPC_GPIO3.MASKED_ACCESS[pin] AND pin) = pin;
 	end;
 end;
 {
