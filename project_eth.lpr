@@ -45,7 +45,7 @@ begin
   SetOutputs(GPIO_Port_3, GPIO_Pin_1);
 end;
 
-procedure server_recv80(tcb_id : byte; rcv_data : PByte; rcv_data_size : word);
+procedure server_recv80(tcb_id : byte; rcv_data : PByte; rcv_size : word);
 const
   HTML_Start = 'HTTP/1.1 200 OK'#10#13'Content-Type: text/html'#10#13#10#13;
   HTML_Head = '<html><head><title>Web Driver</title></head><body><header><h1>Web Driver</h1>';
@@ -60,7 +60,7 @@ var
    snd_buff : array[0..1023] of char;
 begin
   rcv := PChar(rcv_data);
-  data_size := rcv_data_size;
+  data_size := rcv_size;
   page := PageMain;
 
   size := 0;
@@ -155,7 +155,7 @@ begin
     size := size + length(tmp);
   end;
 
-  SocketSendData(tcb_id, PByte(PChar(snd_buff)), size);
+  SocketSendData(tcb_id, @snd_buff[0], size);
   SocketClose(tcb_id);
 end;
 
