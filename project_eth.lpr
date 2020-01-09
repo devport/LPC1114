@@ -14,6 +14,7 @@ type
   TPage = (PageMAIN = 0, PageCONFIG, PagePROGRAM);
 var
    data_buf : array[0..BUFFER_SIZE] of Byte;
+   snd_buff : array[0..1023] of char;
    Server80 : TSocket;
    input_pin, output_pin : array[0..3] of byte;
 
@@ -57,7 +58,6 @@ var
    data_size, size, i, j : word;
    rcv : PChar;
    page : TPage;
-   snd_buff : array[0..1023] of char;
 begin
   rcv := PChar(rcv_data);
   data_size := rcv_size;
