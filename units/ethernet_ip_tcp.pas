@@ -25,7 +25,7 @@ type
   end;
 
   PTCB = ^TTCB;
-  TTCB = packed record
+  TTCB = record
         src_ip : longword;
 	dst_ip : longword;
 	src_port : word;
@@ -78,7 +78,7 @@ var
 implementation
 
 uses
-  ethernet_ip, enc28j60;
+  ethernet_ip, enc28j60, system_LPC1114, utils;
 
 function Socket_TCPClientNum() : longword;
 var
@@ -238,7 +238,6 @@ var
   tcb : PTCB;
   checksum, checksum_size : word;
   socket : PSocket = nil;
-  data_size : word;
   i : byte;
   //
   //infostr : string;
@@ -340,6 +339,9 @@ begin
                         }
                        if(socket^.recv_func <> nil) then
 		         socket^.recv_func(tcb^.id, tcb^.rcv_data, tcb^.rcv_datalen);
+                       if ((tcb^.tcb_flags AND FLAG_FIN) = FLAG_FIN) then
+                         ClrPins(GPIO_Port_0, GPIO_Pin_3);
+
                        tcb^.rcv_data := nil;
                        tcb^.rcv_datalen := 0;
                      end;
