@@ -25,7 +25,7 @@ type
   end;
 
   PTCB = ^TTCB;
-  TTCB = record
+  TTCB = packed record
         src_ip : longword;
 	dst_ip : longword;
 	src_port : word;
@@ -239,8 +239,6 @@ var
   checksum, checksum_size : word;
   socket : PSocket = nil;
   i : byte;
-  //
-  //infostr : string;
 begin
   socket := nil;
   tcb := nil;
@@ -338,7 +336,7 @@ begin
                        end;
                         }
                        if(socket^.recv_func <> nil) then
-		         socket^.recv_func(tcb^.id, tcb^.rcv_data, tcb^.rcv_datalen);
+		         socket^.recv_func(tcb^.id, PChar(tcb^.rcv_data), tcb^.rcv_datalen);
                        if ((tcb^.tcb_flags AND FLAG_FIN) = FLAG_FIN) then
                          ClrPins(GPIO_Port_0, GPIO_Pin_3);
 

@@ -48,6 +48,7 @@ const
    UserSript_Size : word;
    ilProgram : array[0..MAX_PROGRAM_SIZE] of Byte;
    ilProgram_Size : word;
+   Script_ErrorCode : word = 0;
 
 procedure Script_Scanner(Script : PChar; Script_Size : Word; Code : PByte; var Code_Size : Word);
 
@@ -74,12 +75,33 @@ begin
   Inc(Code_Size^);
 end;
 
+procedure Script_Scanner_Addr(Instr : Byte; var Script : PChar; var Code : PByte; var sPtr, cPtr : word);
+begin
+  while(Script[sPtr] = ' ') do Inc(sPtr);
+              Script_EmitCode(Instr, Code, @cPtr);
+              case Script[sPtr] of
+                   'I' : begin
+                          Script_EmitCode(i_I, Code, @cPtr);
+                          Inc(sPtr);
+                          while(Script[sPtr] = ' ') do Inc(sPtr);
+                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
+                        end;
+                   'Q' : begin
+                          Script_EmitCode(i_Q, Code, @cPtr);
+                          Inc(sPtr);
+                          while(Script[sPtr] = ' ') do Inc(sPtr);
+                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
+                       end;
+              end;
+end;
+
 procedure Script_Scanner(Script : PChar; Script_Size : Word; Code : PByte; var Code_Size : Word);
 var
   sPtr, cPtr : word;
 begin
   sPtr := 1;
   cPtr := 0;
+  Script_ErrorCode := 0;
   while true do begin
     // white chars
     while ((Script[sPtr] = #10) OR (Script[sPtr] = #13) OR (Script[sPtr] = #32) OR (Script[sPtr] = #9)) do Inc(sPtr);
@@ -127,7 +149,11 @@ begin
               while(Script[sPtr] = ' ' ) do Inc(sPtr);
 	      Script_EmitCode(i_Q, Code, @cPtr);
 	      Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-	    end;
+	    end else begin
+               Script_ErrorCode := sPtr;
+               Script[sPtr] := '!';
+               exit;
+             end;
             while (Script[sPtr] <> #10) do Inc(sPtr);
             Inc(sPtr);
           end;
@@ -138,6 +164,10 @@ begin
                       Inc(sPtr);
                       if(Script[sPtr] = 'T') then begin
                         Script_EmitCode(i_SET, Code, @cPtr);
+                      end else begin
+                       Script_ErrorCode := sPtr;
+                       Script[sPtr] := '!';
+                       exit;
                       end;
 	             end;
                 'T' : begin
@@ -149,7 +179,11 @@ begin
                         while(Script[sPtr] = ' ' ) do Inc(sPtr);
 	                Script_EmitCode(i_Q, Code, @cPtr);
 	                Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-	              end;
+	              end else begin
+                       Script_ErrorCode := sPtr;
+                       Script[sPtr] := '!';
+                       exit;
+                      end;
                     end;
               end;
               while (Script[sPtr] <> #10) do Inc(sPtr);
@@ -157,91 +191,45 @@ begin
             end;
       'C' : begin
              Inc(sPtr);
-             if(Script[sPtr] = 'L') and (Script[sPtr+1] = 'R') then begin
+             if(Script[sPtr] = 'L') and (Script[sPtr+1] = 'R') AND (Script[sPtr+2] = ' ') then begin
               Inc(sPtr, 2);
               Script_EmitCode(i_CLR, Code, @cPtr);
+             end else begin
+               Script_ErrorCode := sPtr;
+               Script[sPtr] := '!';
+               exit;
              end;
              while (Script[sPtr] <> #10) do Inc(sPtr);
              Inc(sPtr);
           end;
       'A' : begin
              Inc(sPtr);
-             if(Script[sPtr] = 'N') then begin
-              Inc(sPtr);
-              while(Script[sPtr] = ' ') do Inc(sPtr);
-              Script_EmitCode(i_ANDN, Code, @cPtr);
-              case Script[sPtr] of
-                   'I' : begin
-                          Script_EmitCode(i_I, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                        end;
-                   'Q' : begin
-                          Script_EmitCode(i_Q, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                       end;
-              end;
+             if(Script[sPtr] = 'N') AND (Script[sPtr+1] = 'D') AND (Script[sPtr+2] = 'N') AND (Script[sPtr+3] = ' ') then begin
+              Inc(sPtr, 3);
+              Script_Scanner_Addr(i_ANDN, Script, Code, sPtr, cPtr);
+             end else if (Script[sPtr] = 'N') AND (Script[sPtr+1] = 'D') AND (Script[sPtr+2] = ' ') then begin
+               Inc(sPtr, 2);
+               Script_Scanner_Addr(i_AND, Script, Code, sPtr, cPtr);
              end else begin
-              while(Script[sPtr] = ' ') do Inc(sPtr);
-              Script_EmitCode(i_AND, Code, @cPtr);
-              case Script[sPtr] of
-                   'I' : begin
-                          Script_EmitCode(i_I, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                        end;
-                   'Q' : begin
-                          Script_EmitCode(i_Q, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                       end;
-              end;
+               Script_ErrorCode := sPtr;
+               Script[sPtr] := '!';
+               exit;
              end;
              while (Script[sPtr] <> #10) do Inc(sPtr);
              Inc(sPtr);
           end;
       'O' : begin
              Inc(sPtr);
-             if(Script[sPtr] = 'N') then begin
+             if (Script[sPtr] = 'R') AND (Script[sPtr+1] = 'N') AND (Script[sPtr+2] = ' ') then begin
+              Inc(sPtr, 2);
+              Script_Scanner_Addr(i_ORN, Script, Code, sPtr, cPtr);
+             end else if (Script[sPtr] = 'R') AND (Script[sPtr+1] = ' ') then begin
               Inc(sPtr);
-              while(Script[sPtr] = ' ') do Inc(sPtr);
-              Script_EmitCode(i_ORN, Code, @cPtr);
-              case Script[sPtr] of
-                   'I' : begin
-                          Script_EmitCode(i_I, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                        end;
-                   'Q' : begin
-                          Script_EmitCode(i_Q, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                       end;
-              end;
+              Script_Scanner_Addr(i_OR, Script, Code, sPtr, cPtr);
              end else begin
-              while(Script[sPtr] = ' ') do Inc(sPtr);
-              Script_EmitCode(i_OR, Code, @cPtr);
-              case Script[sPtr] of
-                   'I' : begin
-                          Script_EmitCode(i_I, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                        end;
-                   'Q' : begin
-                          Script_EmitCode(i_Q, Code, @cPtr);
-                          Inc(sPtr);
-                          while(Script[sPtr] = ' ') do Inc(sPtr);
-                          Script_EmitCode(Ord(Script[sPtr])-48, Code, @cPtr);
-                       end;
-              end;
+               Script_ErrorCode := sPtr;
+               Script[sPtr] := '!';
+               exit;
              end;
              while (Script[sPtr] <> #10) do Inc(sPtr);
              Inc(sPtr);

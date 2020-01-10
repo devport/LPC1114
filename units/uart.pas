@@ -16,7 +16,7 @@ uses system_LPC1114;
 
 procedure UART_Init();
 procedure UART_Send_Byte(data : byte);
-procedure UART_Send(var data : String);
+procedure UART_Send(data : String);
 procedure UART_Send(data : PChar; data_size : word);
 function UART_Recv_Byte() : byte;
 
@@ -62,9 +62,9 @@ end;
 
 procedure UART_Send(data : PChar; data_size : word);
 var
-	i : byte;
+	i : word;
 begin
-	i := 1;
+	i := 0;
 	while i <= data_size do
 	begin
 		UART_Send_Byte(byte(data[i]));
@@ -72,9 +72,9 @@ begin
 	end;
 end;
 
-procedure UART_Send(var data : String);
+procedure UART_Send(data : String);
 var
-	i : byte;
+	i : word;
 begin
 	i := 1;
 	while i <= length(data) do
