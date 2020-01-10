@@ -51,17 +51,16 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
       <TargetProcessor Value="ARMV6M"/>
       <TargetCPU Value="arm"/>
       <TargetOS Value="embedded"/>
-      <Optimizations>
-        <OptimizationLevel Value="2"/>
-      </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="False"/>
       </Debugging>
+      <LinkSmart Value="True"/>
     </Linking>
     <Other>
       <WriteFPCLogo Value="False"/>

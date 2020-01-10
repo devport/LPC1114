@@ -6,9 +6,8 @@
 program project_eth;
 
 uses
-    system_LPC1114, utils, delay, spi, uart, enc28j60, ethernet,
+    system_LPC1114, utils, delay, spi, enc28j60, ethernet,
     ethernet_ip_tcp, strings, il_interpreter;
-
 
 type
   TPage = (PageMAIN = 0, PageCONFIG, PagePROGRAM);
@@ -46,7 +45,7 @@ begin
   SetOutputs(GPIO_Port_3, GPIO_Pin_1);
 end;
 
-procedure server_recv80(tcb_id : byte; rcv_data : PByte; rcv_size : word);
+procedure server_recv80(tcb_id : byte; rcv : PChar; rcv_size : word);
 const
   HTML_Start = 'HTTP/1.1 200 OK'#10#13'Content-Type: text/html'#10#13#10#13;
   HTML_Head = '<html><head><title>Web Driver</title></head><body><header><h1>Web Driver</h1>';
@@ -54,12 +53,10 @@ const
   HTML_main2 = '<div><table><tbody><tr><td>Clients:</td><td>';
   HTML_main3 = '<td></tr></tbody></table></div></header></body></html>';
 var
-   num, pin, tmp : string;
+   tmp : String;
    data_size, size, i, j : word;
-   rcv : PChar;
    page : TPage;
 begin
-  rcv := PChar(rcv_data);
   data_size := rcv_size;
   page := PageMain;
 
@@ -87,7 +84,7 @@ begin
       ClrPins(GPIO_Port_0, GPIO_Pin_3);
       move(rcv[j+4], UserSript[1], data_size-(j+5));
       UserSript_Size := data_size-(j+5);
-
+      page := PagePROGRAM;
       Script_Scanner(UserSript, UserSript_Size, ilProgram, ilProgram_Size);
       break;
     end;
@@ -97,39 +94,39 @@ begin
   if page = PageMain then begin
     move(HTML_main2, snd_buff[size], length(HTML_main2));
     size := size + length(HTML_main2);
-    num:= IntToStr(Socket_TCPClientNum());
-    move(num[1], snd_buff[size], length(num));
-    size := size + length(num);
+    tmp:= IntToStr(Socket_TCPClientNum());
+    move(tmp[1], snd_buff[size], length(tmp));
+    size := size + length(tmp);
 
-    pin := '</td></tr><tr><td>Inputs:</td></tr><tr><td>';
-    move(pin[1], snd_buff[size], length(pin));
-    size := size + length(pin);
+    tmp := '</td></tr><tr><td>Inputs:</td></tr><tr><td>';
+    move(tmp[1], snd_buff[size], length(tmp));
+    size := size + length(tmp);
     for i := 0 to 3 do begin
       if (input_pin[i] = 1) then
-        pin := '1  '
+        tmp := '1  '
       else
-        pin := '0  ';
-      move(pin[1], snd_buff[size], length(pin));
-      size := size + length(pin);
+        tmp := '0  ';
+      move(tmp[1], snd_buff[size], length(tmp));
+      size := size + length(tmp);
     end;
-    pin := '</td></tr>';
-    move(pin[1], snd_buff[size], length(pin));
-    size := size + length(pin);
+    tmp := '</td></tr>';
+    move(tmp[1], snd_buff[size], length(tmp));
+    size := size + length(tmp);
 
-    pin := '<tr><td>Outputs:</td></tr><tr><td>';
-    move(pin[1], snd_buff[size], length(pin));
-    size := size + length(pin);
+    tmp := '<tr><td>Outputs:</td></tr><tr><td>';
+    move(tmp[1], snd_buff[size], length(tmp));
+    size := size + length(tmp);
     for i := 0 to 3 do begin
       if (output_pin[i] = 0) then
-        pin := '<a href="?Eon='+Char(i+$30)+'" >  OFF  </a>'
+        tmp := '<a href="?Eon='+Char(i+$30)+'" >  OFF  </a>'
       else
-        pin := '<a href="?Eoff='+Char(i+$30)+'" >  ON  </a>';
-      move(pin[1], snd_buff[size], length(pin));
-      size := size + length(pin);
+        tmp := '<a href="?Eoff='+Char(i+$30)+'" >  ON  </a>';
+      move(tmp[1], snd_buff[size], length(tmp));
+      size := size + length(tmp);
     end;
-    pin := '</td></tr>';
-    move(pin[1], snd_buff[size], length(pin));
-    size := size + length(pin);
+    tmp := '</td></tr>';
+    move(tmp[1], snd_buff[size], length(tmp));
+    size := size + length(tmp);
     move(HTML_main3, snd_buff[size], length(HTML_main3));
     size := size + length(HTML_main3);
   end;
@@ -141,6 +138,11 @@ begin
     tmp := '<table><tr><td>Program:</td></tr>';
     move(tmp[1], snd_buff[size], length(tmp));
     size := size + length(tmp);
+    if (Script_ErrorCode > 0) then begin
+      tmp := '<tr><td style="color: red;" >Error char : '+IntToStr(Script_ErrorCode)+'</td></tr>';
+      move(tmp[1], snd_buff[size], length(tmp));
+      size := size + length(tmp);
+    end;
     tmp := '<tr><td><textarea name="prg" rows="10" cols="50">';
     move(tmp[1], snd_buff[size], length(tmp));
     size := size + length(tmp);
@@ -154,8 +156,7 @@ begin
     move(tmp[1], snd_buff[size], length(tmp));
     size := size + length(tmp);
   end;
-
-  SocketSendData(tcb_id, @snd_buff[0], size);
+  SocketSendData(tcb_id, @snd_buff, size);
   SocketClose(tcb_id);
 end;
 
@@ -164,8 +165,11 @@ begin
   SystemInit();
   LPC_SYSCON.SYSAHBCLKCTRL := LPC_SYSCON.SYSAHBCLKCTRL or ((1 shl GPIO_SYSAHBCLKDIV_BIT) or (1 shl IOCON_SYSAHBCLKCTRL_BIT));
 
+
   // Delay Init
   Delay_Init();
+
+ // UART_Init();
 
   // SPI Init
   SPI_Init(SPI0, SCK0_2_11);
@@ -196,6 +200,10 @@ begin
   Socket_Listen(@Server80);
   SocketSetFunction(@server80, @server_recv80);
 
+  FillByte(input_pin, sizeof(input_pin), 0);
+  FillByte(output_pin, sizeof(output_pin), 0);
+  FillByte(data_buf[0], sizeof(data_buf), 0);
+
   Set_Inputs(input_pin);
   Set_Outputs(output_pin);
   Interpreter_Run := True;
@@ -206,10 +214,10 @@ begin
 
     SocketProcess(data_buf);
 
-    if PinSense(GPIO_Port_3, GPIO_Pin_3) = True then input_pin[0] := 1 else input_pin[0] := 0;  // in 1
-    if PinSense(GPIO_Port_3, GPIO_Pin_2) = True then input_pin[1] := 1 else input_pin[1] := 0;  // in 2
-    if PinSense(GPIO_Port_1, GPIO_Pin_4) = True then input_pin[2] := 1 else input_pin[2] := 0;  // in 3
-    if PinSense(GPIO_Port_1, GPIO_Pin_11) = True then input_pin[3] := 1 else input_pin[3] := 0; // in 4
+    if PinSense(GPIO_Port_3, GPIO_Pin_3) = True then input_pin[0] := 0 else input_pin[0] := 1;  // in 1
+    if PinSense(GPIO_Port_3, GPIO_Pin_2) = True then input_pin[1] := 0 else input_pin[1] := 1;  // in 2
+    if PinSense(GPIO_Port_1, GPIO_Pin_4) = True then input_pin[2] := 0 else input_pin[2] := 1;  // in 3
+    if PinSense(GPIO_Port_1, GPIO_Pin_11) = True then input_pin[3] := 0 else input_pin[3] := 1; // in 4
 
 
     Interpreter_Loop();
