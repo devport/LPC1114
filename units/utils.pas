@@ -10,20 +10,20 @@ interface
 type
   ArrayChar = array of char;
 
-function IsDigital(c : char): boolean;
+function IsDigital(const c : char): boolean;
 function GetTime():longword;
 
 procedure ClearBit(var Value: longword; Index: Byte);
 procedure SetBit(var Value: longword; Index: Byte);
 
-function IntToStr (I : integer) : String;
+function IntToStr (const I : integer) : String;
 
 // GPIO
-procedure SetInputs(Port : byte; pins : word);
-procedure SetOutputs(Port : byte; pins : word);
-procedure SetPins(Port : byte; pin : word);
-procedure ClrPins(Port : byte; pin : word);
-function PinSense(Port : byte; pin : word) : boolean;
+procedure SetInputs(const Port : byte; const pins : word);
+procedure SetOutputs(const Port : byte; const pins : word);
+procedure SetPins(const Port : byte; const pin : word);
+procedure ClrPins(const Port : byte; const pin : word);
+function PinSense(const Port : byte; const pin : word) : boolean;
 //procedure TogglePin(Port : byte; Index : word);
 
 var
@@ -34,7 +34,7 @@ implementation
 uses
   system_LPC1114;
 
-function IsDigital(c : char): boolean;
+function IsDigital(const c : char): boolean;
 begin
  Result := False;
  if (c in ['0'..'9']) then Result := True;
@@ -56,7 +56,7 @@ begin
 end;
 
 
-function IntToStr (I : integer) : String;
+function IntToStr (const I : integer) : String;
 var
    S : string;
 begin
@@ -64,7 +64,7 @@ begin
   Result := S;
 end;
 
-procedure SetInputs(Port : byte; pins : word);
+procedure SetInputs(const Port : byte; const pins : word);
 begin
 	case Port of
 		0 : begin
@@ -79,7 +79,7 @@ begin
 	end;		
 end;
 
-procedure SetOutputs(Port : byte; pins : word);
+procedure SetOutputs(const Port : byte; const pins : word);
 begin
 	case Port of
 		0 : LPC_GPIO0.DIR := LPC_GPIO0.DIR or pins;
@@ -106,7 +106,7 @@ begin
         end;
 end;
 
-procedure SetPins(Port : byte; pin : word);
+procedure SetPins(const Port : byte; const pin : word);
 begin
 	case Port of
 		0 : LPC_GPIO0.MASKED_ACCESS[pin] := pin;
@@ -116,7 +116,7 @@ begin
 	end;		
 end;
 
-procedure ClrPins(Port : byte; pin : word);
+procedure ClrPins(const Port : byte; const pin : word);
 begin
 	case Port of
 		0 : LPC_GPIO0.MASKED_ACCESS[pin] := 0;
@@ -126,7 +126,7 @@ begin
 	end;		
 end;
 
-function PinSense(Port : byte; pin : word) : boolean;
+function PinSense(const Port : byte;const pin : word) : boolean;
 begin
      Result := False;
 	case Port of

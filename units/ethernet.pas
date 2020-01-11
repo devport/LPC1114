@@ -11,7 +11,7 @@ type
   TSOCKET_STATE = (NOT_A_SOCKET = 0, SOCKET_CLOSED = 1, SOCKET_IN_PROGRESS, SOCKET_CONNECTED, SOCKET_CLOSING);
   TFSM_STATES = (CLOSED = 0, LISTEN = 1, SYN_SENT, SYN_RECEIVED, ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING, LAST_ACK, TIME_WAIT);
 
-  TRecv_function = procedure(tcb_id : byte; rcv_data : PByte; rcv_size : word);
+  TRecv_function = procedure(const tcb_id : byte; const rcv_data : PChar; const rcv_size : word);
 
   PEth_HDR = ^TEth_Hdr;
   TEth_HDR = packed record
@@ -45,11 +45,10 @@ const
 
 var
   MACADDR : array of byte = ($CC,$46,$D6,$10,$00,$39);
-  IP : array of byte = (192, 168, 1, 220);
+  IP : array of byte = (192, 168, 1, 200);
 
-  procedure ETH_Process_Frame(buffer : PBYTE);
-  function ByteSwap16(a : word) : word;
-  function ByteSwap32(a : longword) : longword;
+  function ByteSwap16(const a : word) : word;
+  function ByteSwap32(const a : longword) : longword;
   // Sockets
   procedure Socket_Create(socket : PSocket; sck_type : byte);
   procedure Socket_Remove(socket : PSocket);
@@ -59,26 +58,25 @@ var
   function Socket_Listen(socket : PSocket) : boolean;
   procedure SocketProcess(data_buffer : PBYTE);
   procedure SocketSetFunction(socket : PSocket; func : TRecv_function);
-  procedure SocketSendData(id : byte; data : PByte; datalen : word);
-  procedure SocketClose(id : byte);
+  procedure SocketSendData(const id : byte; data : PByte; datalen : word);
+  procedure SocketClose(const id : byte);
   procedure SocketIncreaseTime();
-  function SocketSegmentation(id : byte) : byte;
 
 implementation
 
 uses
- uart, enc28j60, ethernet_arp, ethernet_ip, ethernet_ip_tcp;
+ enc28j60, ethernet_arp, ethernet_ip, ethernet_ip_tcp;
 
 var
   socketList : PSocket;
   socketListSize : word;
 
-function ByteSwap16(a : word) : word;
+function ByteSwap16(const a : word) : word;
 begin
   Result := (((WORD(a) AND WORD($FF00)) >> 8) OR ((WORD(a) AND WORD($00FF)) << 8));
 end;
 
-function ByteSwap32(a : longword) : longword;
+function ByteSwap32(const a : longword) : longword;
 begin
   Result := (((longword(a) AND longword($FF000000)) >> 24) OR
             ((longword(a) AND longword($00ff0000)) >>  8) OR
@@ -86,44 +84,23 @@ begin
             ((longword(a) AND longword($000000ff)) << 24) );
 end;
 
-procedure ETH_Swap_Mac(buf : PBYTE);
-var
-  i : byte;
-begin
- for i := 0 to 5 do begin
-  buf[i] := buf[i+6];
-  buf[i+6] := MACADDR[i];
- end;
-end;
-
-procedure ETH_Process_Frame(buffer : PByte);
-var
-  ETH_Header : PEth_HDR;
-begin
-  ETH_Header := PEth_HDR(buffer);
-
-  case (ByteSwap16(ETH_Header^.hdrtype)) of
-    ETH_FRAME_TYPE_ARP : begin
-                           // UART_Send('Packet ARP'+#10#13);
-                           ETH_Protocol_ARP(buffer+ETH_HEADER_SIZE, PBYTE(IP));
-                         end;
-    ETH_FRAME_TYPE_IPV4 : begin
-                           // UART_Send('Packet IP'+#10#13);
-                           ETH_Protocol_IP(buffer+ETH_HEADER_SIZE, PBYTE(IP));
-                          end;
-  end;
-end;
-
 procedure ETH_Process(data_buffer : PByte);
 var
-  rcv_size : word = 0;
+  rcv_size : longword = 0;
+  ETH_Header : PEth_HDR;
 begin
   FillByte(data_buffer[0], BUFFER_SIZE, 0);
   if(enc28j60linkup() = 1)then begin
     rcv_size := enc28j60PacketReceive(BUFFER_SIZE, data_buffer);
 
-    if(rcv_size > 0 )then
-      ETH_Process_Frame(data_buffer);
+    if(rcv_size > 0 )then begin
+      ETH_Header := PEth_HDR(data_buffer);
+
+      case (ByteSwap16(ETH_Header^.hdrtype)) of
+        ETH_FRAME_TYPE_ARP : ETH_Protocol_ARP(data_buffer+ETH_HEADER_SIZE, PBYTE(IP));
+        ETH_FRAME_TYPE_IPV4 : ETH_Protocol_IP(data_buffer+ETH_HEADER_SIZE, PBYTE(IP));
+      end;
+    end;
   end;
 end;
 
@@ -242,13 +219,13 @@ begin
   socket^.recv_func := func;
 end;
 
-procedure SocketSendData(id : byte; data : PByte; datalen : word);
+procedure SocketSendData(const id : byte; data : PByte; datalen : word);
 begin
   tcb_array[id].snd_data := data;
   tcb_array[id].snd_datalen := datalen;
 end;
 
-procedure SocketClose(id : byte);
+procedure SocketClose(const id : byte);
 begin
   tcb_array[id].tcb_flags := tcb_array[id].tcb_flags OR FLAG_FIN;
   tcb_array[id].state := FIN_WAIT_2;
@@ -262,11 +239,5 @@ begin
     Inc(tcb_array[it].time);
   end;
 end;
-
-function SocketSegmentation(id : byte) : byte;
-begin
-  Result := tcb_array[id].seg;
-end;
-
 
 end.

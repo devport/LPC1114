@@ -55,8 +55,8 @@ end;
 procedure ETH_Protocol_IP(ip_hdr, ip : PByte);
 var
   IP_Header : PIP_HDR;
-  ip_header_ver, ip_header_len : byte;
-  checksum, ip_total_len, ip_data_len : word;
+  ip_header_ver, ip_header_len : longword;
+  checksum, ip_total_len, ip_data_len : longword;
   //infostr : string;
 begin
   IP_Header := PIP_HDR(ip_hdr);

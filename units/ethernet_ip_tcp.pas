@@ -39,11 +39,10 @@ type
 	irs : longword;
 	state : TFSM_STATES;
 	time : longword;
-	id : byte;
+	id : longword;
 	src_mac : array[0..5] of byte;
 	tcb_flags : byte;
         tcb_use : byte;
-        seg : byte;
 
 	snd_data : PByte;
 	snd_datalen : word;
@@ -70,7 +69,7 @@ var
   tcb_array : array[0..TCB_LENGTH] of TTCB;
 
   function Socket_TCPClientNum() : longword;
-  procedure ETH_Protocol_IP_TCP(ip_hdr, tcp_hdr : PByte; ip_data_len : word);
+  procedure ETH_Protocol_IP_TCP(const ip_hdr, tcp_hdr : PByte; const ip_data_len : longword);
   procedure ETH_Protocol_IP_TCP_Send(snd_buf : PByte; tcb : PTCB);
   procedure TCB_Process(buffer : PByte);
   procedure InitTCB();
@@ -102,7 +101,6 @@ begin
    tcb_array[i].dst_ip := 0;
    tcb_array[i].dst_port := 0;
    tcb_array[i].id := i;
-   tcb_array[i].seg := 0;
    tcb_array[i].rcv_nxt := 0;
    tcb_array[i].snd_nxt := 0;
    tcb_array[i].tcb_flags := FLAG_NUL;
@@ -128,7 +126,6 @@ begin
       tcb_array[i].src_ip := 0;
       tcb_array[i].rcv_nxt := 0;
       tcb_array[i].snd_nxt := 0;
-      tcb_array[i].seg := 0;
       tcb_array[i].tcb_flags := FLAG_NUL;
       tcb_array[i].snd_data := nil;
       tcb_array[i].snd_datalen := 0;
@@ -166,7 +163,6 @@ begin
   tcb^.dst_ip := 0;
   tcb^.dst_port := 0;
   tcb^.rcv_nxt := 0;
-  tcb^.seg := 0;
   tcb^.snd_nxt := 0;
   tcb^.rcv_datalen := 0;
   tcb^.rcv_data := nil;
@@ -177,7 +173,7 @@ end;
 
 procedure TCB_Process(buffer : PByte);
 var
-  i : byte;
+  i : integer;
 begin
   for i:=0 to TCB_LENGTH do
   begin
@@ -230,15 +226,15 @@ begin
   Result := Calc_Checksum(psdh, 6, sum);
 end;
 
-procedure ETH_Protocol_IP_TCP(ip_hdr, tcp_hdr : PByte; ip_data_len : word);
+procedure ETH_Protocol_IP_TCP(const ip_hdr, tcp_hdr : PByte; const ip_data_len : longword);
 var
   TCP_Header : PTCP_HDR;
   IP_Header : PIP_HDR;
   ETH_Header : PETH_HDR;
   tcb : PTCB;
-  checksum, checksum_size : word;
+  checksum, checksum_size : longword;
   socket : PSocket = nil;
-  i : byte;
+  i : integer;
 begin
   socket := nil;
   tcb := nil;
@@ -329,12 +325,6 @@ begin
                        tcb^.tcb_flags :=  FLAG_ACK;
                        tcb^.time := 0;
 
-                       {if tcb^.rcv_datalen > 0 then begin
-                         move(tcb^.rcv_data[1], tcb^.rcv_tmp[tcb^.rcv_datalen], data_size);
-                         tcb^.rcv_datalen := tcb^.rcv_datalen + data_size;
-                         tcb^.rcv_data := tcb^.rcv_tmp;
-                       end;
-                        }
                        if(socket^.recv_func <> nil) then
 		         socket^.recv_func(tcb^.id, PChar(tcb^.rcv_data), tcb^.rcv_datalen);
                        if ((tcb^.tcb_flags AND FLAG_FIN) = FLAG_FIN) then
@@ -351,9 +341,6 @@ begin
 		       tcb^.snd_nxt := ByteSwap32(TCP_Header^.ack);
                        tcb^.tcb_flags :=  FLAG_ACK;
                        tcb^.time := 0;
-
-                       //if tcb^.rcv_datalen > 0 then
-                        // move(tcb^.rcv_data[1], tcb^.rcv_tmp, tcb^.rcv_datalen);
                      end;
 
                      // Pasive closed
@@ -417,7 +404,6 @@ var
   i : byte;
   checksum, checksum_psdh, checksum_data : word;
   datalen, olddatalen, len : word;
-  //snd_buf : array[0..BUFFER_SIZE] of byte;
 begin
   len := tcb^.snd_datalen;
   datalen := len;
