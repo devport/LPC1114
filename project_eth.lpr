@@ -15,7 +15,7 @@ var
    data_buf : array[0..BUFFER_SIZE] of Byte;
    snd_buff : array[0..1023] of char;
    Server80 : TSocket;
-   input_pin, output_pin : array[0..3] of byte;
+   input_pin, output_pin : array[0..3] of Byte;
 
 
 procedure SysTick_interrupt; public Name 'SysTick_interrupt'; interrupt;
@@ -45,7 +45,7 @@ begin
   SetOutputs(GPIO_Port_3, GPIO_Pin_1);
 end;
 
-procedure server_recv80(tcb_id : byte; rcv : PChar; rcv_size : word);
+procedure server_recv80(const tcb_id : byte; const rcv : PChar; const rcv_size : word);
 const
   HTML_Start = 'HTTP/1.1 200 OK'#10#13'Content-Type: text/html'#10#13#10#13;
   HTML_Head = '<html><head><title>Web Driver</title></head><body><header><h1>Web Driver</h1>';
@@ -54,10 +54,9 @@ const
   HTML_main3 = '<td></tr></tbody></table></div></header></body></html>';
 var
    tmp : String;
-   data_size, size, i, j : word;
+   size, i, j : integer;
    page : TPage;
 begin
-  data_size := rcv_size;
   page := PageMain;
 
   size := 0;
@@ -79,11 +78,11 @@ begin
   end;
 
   j := 0;
-  while (j < data_size) do begin
+  while (j < rcv_size) do begin
     if (rcv[j] = 'p') AND (rcv[j+1] = 'r') AND (rcv[j+2] = 'g') then begin
       ClrPins(GPIO_Port_0, GPIO_Pin_3);
-      move(rcv[j+4], UserSript[1], data_size-(j+5));
-      UserSript_Size := data_size-(j+5);
+      move(rcv[j+4], UserSript[1], rcv_size-(j+5));
+      UserSript_Size := rcv_size-(j+5);
       page := PagePROGRAM;
       Script_Scanner(UserSript, UserSript_Size, ilProgram, ilProgram_Size);
       break;

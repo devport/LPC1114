@@ -48,6 +48,7 @@
     <Parsing>
       <SyntaxOptions>
         <AllowLabel Value="False"/>
+        <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
