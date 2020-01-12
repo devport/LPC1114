@@ -6,15 +6,15 @@
 program project_eth;
 
 uses
-    system_LPC1114, utils, delay, spi, enc28j60, ethernet,
+    system_LPC1114, uart, utils, delay, spi, enc28j60, ethernet,
     ethernet_ip_tcp, strings, il_interpreter;
 
 type
   TPage = (PageMAIN = 0, PageCONFIG, PagePROGRAM);
 var
    data_buf : array[0..BUFFER_SIZE] of Byte;
-   snd_buff : array[0..1023] of char;
-   Server80 : TSocket;
+   snd_buff : array[0..BUFFER_SIZE] of char;
+   Server80, Server1234 : TSocket;
    input_pin, output_pin : array[0..3] of Byte;
 
 
@@ -45,7 +45,22 @@ begin
   SetOutputs(GPIO_Port_3, GPIO_Pin_1);
 end;
 
-procedure server_recv80(const tcb_id : byte; const rcv : PChar; const rcv_size : word);
+
+procedure server_recv1234(const id : byte; const rcv : PChar; const rcv_size : word);
+const
+  UDP_Start = 'UDP odpowiedz od serwera';
+var
+  size : longword;
+begin
+  size := 0;
+  move(UDP_Start, snd_buff, length(UDP_Start));
+  size := size + length(UDP_Start);
+
+  UART_Send(rcv, rcv_size);
+  SocketSendData(id, @snd_buff, size);
+end;
+
+procedure server_recv80(const id : byte; const rcv : PChar; const rcv_size : word);
 const
   HTML_Start = 'HTTP/1.1 200 OK'#10#13'Content-Type: text/html'#10#13#10#13;
   HTML_Head = '<html><head><title>Web Driver</title></head><body><header><h1>Web Driver</h1>';
@@ -155,8 +170,8 @@ begin
     move(tmp[1], snd_buff[size], length(tmp));
     size := size + length(tmp);
   end;
-  SocketSendData(tcb_id, @snd_buff, size);
-  SocketClose(tcb_id);
+  SocketSendData(id, @snd_buff, size);
+  SocketClose(id);
 end;
 
 begin
@@ -168,7 +183,8 @@ begin
   // Delay Init
   Delay_Init();
 
- // UART_Init();
+  // UART Init
+  UART_Init();
 
   // SPI Init
   SPI_Init(SPI0, SCK0_2_11);
@@ -198,6 +214,11 @@ begin
   Socket_Bind(@Server80, 80);
   Socket_Listen(@Server80);
   SocketSetFunction(@server80, @server_recv80);
+
+  Socket_Create(@Server1234, IPV4_TYPE_UDP);
+  Socket_Bind(@Server1234, 1234);
+  Socket_Listen(@Server1234);
+  SocketSetFunction(@server1234, @server_recv1234);
 
   FillByte(input_pin, sizeof(input_pin), 0);
   FillByte(output_pin, sizeof(output_pin), 0);
