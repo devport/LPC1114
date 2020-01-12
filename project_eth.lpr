@@ -16,7 +16,7 @@ var
    snd_buff : array[0..BUFFER_SIZE] of char;
    Server80, Server1234 : TSocket;
    input_pin, output_pin : array[0..3] of Byte;
-
+   time2 : longword;
 
 procedure SysTick_interrupt; public Name 'SysTick_interrupt'; interrupt;
 begin
@@ -48,7 +48,7 @@ end;
 
 procedure server_recv1234(const id : byte; const rcv : PChar; const rcv_size : word);
 const
-  UDP_Start = 'UDP odpowiedz od serwera';
+  UDP_Start = 'UDP Respond from server';
 var
   size : longword;
 begin
@@ -56,7 +56,6 @@ begin
   move(UDP_Start, snd_buff, length(UDP_Start));
   size := size + length(UDP_Start);
 
-  UART_Send(rcv, rcv_size);
   SocketSendData(id, @snd_buff, size);
 end;
 
@@ -184,7 +183,7 @@ begin
   Delay_Init();
 
   // UART Init
-  UART_Init();
+  //UART_Init();
 
   // SPI Init
   SPI_Init(SPI0, SCK0_2_11);
@@ -222,15 +221,21 @@ begin
 
   FillByte(input_pin, sizeof(input_pin), 0);
   FillByte(output_pin, sizeof(output_pin), 0);
-  FillByte(data_buf[0], sizeof(data_buf), 0);
+  FillByte(data_buf, sizeof(data_buf), 0);
 
   Set_Inputs(input_pin);
   Set_Outputs(output_pin);
   Interpreter_Run := True;
 
+  time2 := 0;
+
   while true do
   begin
-    SetPins(GPIO_Port_2, GPIO_Pin_1);
+    if time2 > 1000 then
+      time2 := 0;
+
+    if time2 > 950 then
+     ClrPins(GPIO_Port_2, GPIO_Pin_1);
 
     SocketProcess(data_buf);
 
@@ -247,8 +252,8 @@ begin
     if output_pin[2] = 1 then ClrPins(GPIO_Port_3, GPIO_Pin_1) else SetPins(GPIO_Port_3, GPIO_Pin_1); // out 3
     if output_pin[3] = 1 then ClrPins(GPIO_Port_2, GPIO_Pin_3) else SetPins(GPIO_Port_2, GPIO_Pin_3); // out 4
 
-    ClrPins(GPIO_Port_2, GPIO_Pin_1);
-
+    if time2 < 950 then SetPins(GPIO_Port_2, GPIO_Pin_1);
+    Inc(time2);
   end;
 end.
 
