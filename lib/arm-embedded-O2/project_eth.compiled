@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CONFIG>
-  <Compiler Value="/usr/bin/ppcrossarm" Date="1577016115"/>
-  <Params Value=" -Tembedded -Parm -CpARMV6M -MObjFPC -Schi -O2 -vewnhibq -Fi/media/darek/6870AF0E70AEE254/pascal/eth/lib/arm-embedded -Fl/usr/lib/fpc/3.3.1/units/arm-embedded -Fu/media/darek/6870AF0E70AEE254/pascal/units -Fu/media/darek/6870AF0E70AEE254/pascal/eth/ -FU/media/darek/6870AF0E70AEE254/pascal/eth/lib/arm-embedded/ -FE/media/darek/6870AF0E70AEE254/pascal/eth/ -o/media/darek/6870AF0E70AEE254/pascal/eth/project_eth -WpLPC1114FBD48_302 -al -dLPC1114 project_eth.lpr"/>
-</CONFIG>
