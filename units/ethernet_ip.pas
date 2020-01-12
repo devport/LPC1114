@@ -23,16 +23,16 @@ type
     dst : longword;
   end;
 
-var
-  package_id : word = 0;
 
   function Calc_Checksum(buf : PWord; num_of_shorts, start : word) : word;
+  function calc_psdh(src, dst : longword; datalen, sum : word; protocol : byte) : word;
+
   procedure ETH_Protocol_IP(ip_hdr, ip : PByte);
 
 implementation
 
 uses
- ethernet, ethernet_ip_icmp, ethernet_ip_tcp, ethernet_ip_udp;
+ uart, ethernet, ethernet_ip_icmp, ethernet_ip_tcp, ethernet_ip_udp;
 
 // works for big endian or little endian byte order
 function Calc_Checksum(buf : PWord; num_of_shorts, start : word) : word;
@@ -51,13 +51,37 @@ begin
   result := check;
 end;
 
+// Obliczanie pseudo naglowka
+function calc_psdh(src, dst : longword; datalen, sum : word; protocol : byte) : word;
+var
+  psdh : array[0..5] of word;
+  p : PByte;
+begin
+  p := @psdh[0];
+
+  p[3] := (src >> 24) AND $FF;		//* src ip address */
+  p[2] := (src >> 16) AND $FF;
+  p[1] := (src >> 8) AND $FF;
+  p[0] := src AND $FF;
+
+  p[7] := (dst >> 24) AND $FF;		//* dst ip address */
+  p[6] := (dst >> 16) AND $FF;
+  p[5] := (dst >> 8) AND $FF;
+  p[4] := dst AND $FF;
+
+  p[8] := 0;
+  p[9] := protocol;			//* protocol */
+  p[10] := datalen>>8;		//* tcp size */
+  p[11] := datalen AND $ff;
+
+  Result := Calc_Checksum(psdh, 6, sum);
+end;
 
 procedure ETH_Protocol_IP(ip_hdr, ip : PByte);
 var
   IP_Header : PIP_HDR;
   ip_header_ver, ip_header_len : longword;
   checksum, ip_total_len, ip_data_len : longword;
-  //infostr : string;
 begin
   IP_Header := PIP_HDR(ip_hdr);
   // Get header info and check
@@ -79,7 +103,7 @@ begin
      ((((IP_Header^).dst >> 16) AND $FF)  <> ip[2]) OR
      ((((IP_Header^).dst >> 24) AND $FF)  <> ip[3])) then exit;
 
- // UART_Send('OK'+#10#13);
+  //UART_Send('OK'+#10#13);
 
 //---END OF CHECK---------------------------------------------------------------
   ip_data_len := ip_total_len - ip_header_len;
@@ -93,8 +117,7 @@ begin
                        ETH_Protocol_IP_TCP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
                     end;
     IPV4_TYPE_UDP : begin
-                       //infostr := ' IPV4 Type UDP'+#10#13;
-                       //UART_Send(infostr);
+                       //UART_Send(' IPV4 Type UDP'+#10#13);
                        ETH_Protocol_IP_UDP(ip_hdr, ip_hdr+ETH_IP_HEADER_SIZE, ip_data_len);
                     end;
   end;

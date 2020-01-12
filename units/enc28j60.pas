@@ -503,6 +503,7 @@ function enc28j60PacketReceive(maxlen : word; packet : PByte) : word;
 var
    len, rxstat : word;
 begin
+     len := 0;
      if(UnreleasedPacket = 1) then
      begin
           if (gNextPacketPtr = 0) then
